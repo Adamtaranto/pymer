@@ -16,11 +16,14 @@ class KmerCounter(object):
     '''
     Count k-mers in DNA sequences.
 
+    DNA sequences are counted using the .consume method:
 
     >>> kc = KmerCounter(4)
     >>> kc.consume('ACGTACGTACGT')
     >>> kc['ACGT']
     3
+
+    KmerCounters can be added and subtracted, which 
     >>> kc += kc
     >>> kc['ACGT']
     6
@@ -76,12 +79,35 @@ class KmerCounter(object):
 
 
     def consume(self, seq):
+        '''Counts all k-mers in sequence.
+
+        >>> kc = KmerCounter(2)
+        >>> kc.consume('AAAA')
+        >>> kc['AA']
+        3
+        '''
         for kmer in iter_kmers(seq, self.k):
             self.array[kmer] += 1
 
     def unconsume(self, seq):
-        for kmer in iter_kmers(seq):
-            self.array[item] -= 1
+        '''Subtracts all k-mers in sequence.
+        >>> kc = KmerCounter(2)
+        >>> kc.consume('AAAA')
+        >>> kc['AA']
+        3
+        >>> kc.unconsume('AA')
+        >>> kc['AA']
+        2
+
+        Never gives negative numbers:
+        >>> kc['AA']
+        2
+        >>> kc.unconsume('AAAA')
+        >>> kc['AA']
+        0
+        '''
+        for kmer in iter_kmers(seq, self.k):
+            self.array[kmer] = max(self.array[kmer] - 1, 0)
 
     def to_dict(self, sparse=True):
         d = {}

@@ -54,8 +54,12 @@ def test_counter_operations():
     add = kc + kc
     assert np.all(add.array == np.ones(4**2, dtype=int)*2)
 
-    sub = kc - kc
-    assert np.all(add.array == np.ones(4**2, dtype=int)*2)
+    sub = add - kc
+    assert np.all(sub.array == kc.array)
+
+    sub -= kc
+    sub -= kc
+    assert np.all(sub.array == np.zeros(4**2, dtype=int))
 
 
 def test_counter_consume():
@@ -63,3 +67,7 @@ def test_counter_consume():
     kc = KmerCounter(3)
     kc.consume(K3_DBS)
     assert np.all(kc.array == np.ones(4**3, dtype=int))
+
+    kc.unconsume('ACT')
+    assert kc['ACT'] == 0
+
