@@ -3,15 +3,38 @@ import numpy as np
 
 from ._pymer import (
     iter_kmers,
+    hash_to_kmer,
 )
 
+__all__ = [
+    'KmerCounter',
+    'iter_kmers',
+    'hash_to_kmer',
+]
+
 class KmerCounter(object):
+    '''
+    Count k-mers in DNA sequences.
+
+
+    >>> kc = KmerCounter(4)
+    >>> kc.consume('ACGTACGTACGT')
+    >>> kc['ACGT']
+    3
+    >>> kc += kc
+    >>> kc['ACGT']
+    6
+    >>> kc -= kc
+    >>> kc['ACGT']
+    0
+
+    '''
 
     def __init__(self, k, alphabet='ACGT'):
         self.k = k
         self.alphabet = alphabet
         self.num_kmers = len(alphabet) ** k
-        self.array = np.zeros(len(alphabet) ** k)
+        self.array = np.zeros(len(alphabet) ** k, dtype=int)
 
     def __add__(self, other):
         if self.k != other.k or self.alphabet != other.alphabet:
@@ -68,7 +91,8 @@ class KmerCounter(object):
                 continue
             kmer = hash_to_kmer(kmer, self.k)
             d[kmer] = count
+        return d
 
     def print_table(self, sparse=False, file=None, sep='\t'):
-        for kmer, count in self.to_dict(sparse=sparse).items():
+        for kmer, count in sorted(self.to_dict(sparse=sparse).items()):
             print(kmer, count, sep=sep, file=file)

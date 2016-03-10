@@ -19,19 +19,19 @@ def test_counter_init():
     assert kc.k == 5
     assert kc.num_kmers == 4**5
     assert list(kc.alphabet) == list('ACGT')
-    assert np.all(kc.array == np.zeros(4**5))
+    assert np.all(kc.array == np.zeros(4**5, dtype=int))
     assert len(kc) == 0
 
     kc = KmerCounter(5, alphabet='NOTDNA')
     assert kc.k == 5
     assert kc.num_kmers == 6**5
     assert list(kc.alphabet) == list('NOTDNA')
-    assert np.all(kc.array == np.zeros(6**5))
+    assert np.all(kc.array == np.zeros(6**5, dtype=int))
 
 
 def test_iter_kmers():
     k = 2
-    counts = np.zeros(4**k)
+    counts = np.zeros(4**k, dtype=int)
     for kmer in iter_kmers(K2_DBS, k):
         counts[kmer] += 1
     assert counts.sum() == len(K2_DBS) - k + 1, counts.sum()
@@ -52,14 +52,14 @@ def test_counter_operations():
     kc.consume(K2_DBS)
 
     add = kc + kc
-    assert np.all(add.array == np.ones(4**2)*2)
+    assert np.all(add.array == np.ones(4**2, dtype=int)*2)
 
     sub = kc - kc
-    assert np.all(add.array == np.ones(4**2)*2)
+    assert np.all(add.array == np.ones(4**2, dtype=int)*2)
 
 
 def test_counter_consume():
     # de Bruijn DNA sequence of k=3, i.e. contains all 3-mers once
     kc = KmerCounter(3)
     kc.consume(K3_DBS)
-    assert np.all(kc.array == np.ones(4**3))
+    assert np.all(kc.array == np.ones(4**3, dtype=int))
