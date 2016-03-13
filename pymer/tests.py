@@ -3,8 +3,9 @@ import itertools as itl
 
 from . import (
     KmerCounter,
+    CountMinKmerCounter,
 )
-from ._pymer import (
+from ._hash import (
     iter_kmers,
     hash_to_kmer,
 )
@@ -13,6 +14,12 @@ from ._pymer import (
 # de Bruijn DNA sequences of k={2,3}, i.e. contain all 2/3-mers once
 K2_DBS = 'AACAGATCCGCTGGTTA'
 K3_DBS = 'AAACAAGAATACCACGACTAGCAGGAGTATCATGATTCCCGCCTCGGCGTCTGCTTGGGTGTTTAA'
+
+
+def all_kmers(k):
+    for kmer in itl.product('ACGT', repeat=k):
+        yield ''.join(kmer)
+
 
 def test_counter_init():
     kc = KmerCounter(5)
@@ -48,22 +55,29 @@ def test_hash_to_kmer():
 
 
 def test_counter_operations():
-    kc = KmerCounter(2)
-    kc.consume(K2_DBS)
+    def do_test(kc):
+        kc.consume(K2_DBS)
 
-    add = kc + kc
-    assert np.all(add.array == np.ones(4**2, dtype=int)*2)
+        for mer in all_kmers(2):
+            assert kc[mer] == 1
 
-    sub = add - kc
-    assert np.all(sub.array == kc.array)
+        add = kc + kc
+        for mer in all_kmers(2):
+            assert kc[mer] == 2 # each kmer twice
 
-    sub -= kc
-    sub -= kc
-    assert np.all(sub.array == np.zeros(4**2, dtype=int))
+        sub = add - kc
+        for mer in all_kmers(2):
+            assert kc[mer] == 1 # back to once
 
+        sub -= kc
+        sub -= kc
+        for mer in all_kmers(2):
+            assert kc[mer] == 0 # caps at zero even after -2
+
+    for kc in [KmerCounter(2), CountMinKmerCounter(2, (4, 100000))]:
+        do_test(kc)
 
 def test_counter_consume():
-    # de Bruijn DNA sequence of k=3, i.e. contains all 3-mers once
     kc = KmerCounter(3)
     kc.consume(K3_DBS)
     assert np.all(kc.array == np.ones(4**3, dtype=int))
@@ -71,3 +85,18 @@ def test_counter_consume():
     kc.unconsume('ACT')
     assert kc['ACT'] == 0
 
+def test_counter_operations():
+    def do_test(kc):
+        for mer in all_kmers(3):
+            assert kc[mer] == 0 # zero at start
+
+        kc.consume(K3_DBS)
+        for mer in all_kmers(3):
+            assert kc[mer] == 1  # After consuming
+
+        kc.unconsume(K3_DBS)
+        for mer in all_kmers(3):
+            assert kc[mer] == 0  # back to zero after unconsume
+
+    for kc in [KmerCounter(3), CountMinKmerCounter(3, (4, 100000))]:
+        do_test(kc)

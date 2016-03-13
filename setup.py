@@ -46,7 +46,7 @@ setup(
     tests_require=[
         'nose',
     ],
-    ext_modules=cythonize('pymer/_pymer.pyx'),
+    ext_modules=cythonize('pymer/_hash.pyx'),
     description=description,
     author="Kevin Murray",
     author_email="spam@kdmurray.id.au",
