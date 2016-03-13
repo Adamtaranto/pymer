@@ -24,6 +24,7 @@
 
 from setuptools import setup
 import versioneer
+from setuptools.extension import Extension
 from Cython.Build import cythonize
 
 description = """
@@ -47,7 +48,11 @@ setup(
     tests_require=[
         'nose',
     ],
-    ext_modules=cythonize('pymer/_hash.pyx'),
+    ext_modules=cythonize([
+        Extension('pymer._hash',
+                  ['pymer/_hash.pyx', ],
+        ),
+    ]),
     description=description,
     author="Kevin Murray",
     author_email="spam@kdmurray.id.au",
