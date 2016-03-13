@@ -1,0 +1,5 @@
+
+.PHONY: all
+all:
+	./setup.py build_ext --inplace
+
