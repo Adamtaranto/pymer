@@ -165,7 +165,6 @@ class ExactKmerCounter(BaseCounter):
     alphabet : list-like (str, bytes, list, set, tuple) of letters
         Alphabet over which values are defined
     '''
-    writables = ['k', 'alphabet', 'array']
 
     def __init__(self, k, alphabet='ACGT', array=None):
         self.k = k
