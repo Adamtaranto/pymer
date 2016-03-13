@@ -36,6 +36,7 @@ setup(
     packages=['pymer', ],
     version=versioneer.get_version(),
     install_requires=[
+        'bloscpack>=0.10.0',
         'xxhash>=0.5.0',
         'numpy>=1.10',
         'scipy>=0.16',

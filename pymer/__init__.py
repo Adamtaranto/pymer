@@ -47,9 +47,43 @@ Counters can be added and subtracted:
 >>> kc -= kc
 >>> kc['GTAC']
 0
+
+Counters may be read and written to a file. A YAML object describing the
+counter is writen, with arrays compressed with bloscpack.
+
+>>> dumped = kc.write()
+>>> new_kc = ExactKmerCounter.read(string=dumped)
+>>> (kc.array == new_kc.array).all()
+True
 '''
 
+# Copyright 2016 Kevin Murray <spam@kdmurray.id.au>
+#
+# Permission is hereby granted, free of charge, to any person obtaining
+# a copy of this software and associated documentation files (the
+# "Software"), to deal in the Software without restriction, including
+# without limitation the rights to use, copy, modify, merge, publish,
+# distribute, sublicense, and/or sell copies of the Software, and to
+# permit persons to whom the Software is furnished to do so, subject to
+# the following conditions:
+#
+# The above copyright notice and this permission notice shall be
+# included in all copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+# EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+# MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+# NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS
+# BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN
+# ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+# CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
+
 from __future__ import absolute_import, division, print_function
+import yaml
+import struct
+
+import bloscpack as bp
 import numpy as np
 from xxhash import xxh64
 
@@ -57,6 +91,7 @@ from ._hash import (
     iter_kmers,
     hash_to_kmer,
 )
+
 
 __all__ = [
     'ExactKmerCounter',
@@ -67,6 +102,8 @@ __all__ = [
 
 
 class BaseCounter(object):
+    file_version = 1
+
     def consume(self, seq):
         '''Counts all k-mers in sequence.'''
         for kmer in iter_kmers(seq, self.k):
@@ -76,6 +113,44 @@ class BaseCounter(object):
         '''Subtracts all k-mers in sequence.'''
         for kmer in iter_kmers(seq, self.k):
             self[kmer] = max(self[kmer] - 1, 0)
+
+    @classmethod
+    def read(cls, filename=None, string=None):
+
+        if filename is not None:
+            with open(filename) as fh:
+                obj = yaml.load(fh)
+        else:
+            obj = yaml.load(string)
+        if obj['class'] != cls.__name__:
+            msg = 'Class mismatch: use {}.read() instead'.format(obj['class'])
+            raise ValueError(msg)
+        if obj['fileversion'] < cls.file_version:
+            msg = 'File format version mismatch'
+            raise ValueError(msg)
+        k = obj['k']
+        alphabet = obj['alphabet']
+        array = bp.unpack_ndarray_str(obj['array'])
+        return cls(k, alphabet=alphabet, array=array)
+
+
+    def write(self, filename=None):
+        array = bp.pack_ndarray_str(self.array)
+        obj = {'k': self.k,
+               'alphabet': list(self.alphabet),
+               'array': array,
+               'class': self.__class__.__name__,
+               'fileversion': self.file_version,
+               }
+
+        if filename is not None:
+            with open(filename, 'w') as fh:
+                yaml.dump(obj, fh)
+        else:
+            return yaml.dump(obj)
+
+
+
 
 
 class ExactKmerCounter(BaseCounter):
@@ -90,12 +165,16 @@ class ExactKmerCounter(BaseCounter):
     alphabet : list-like (str, bytes, list, set, tuple) of letters
         Alphabet over which values are defined
     '''
+    writables = ['k', 'alphabet', 'array']
 
-    def __init__(self, k, alphabet='ACGT'):
+    def __init__(self, k, alphabet='ACGT', array=None):
         self.k = k
         self.alphabet = alphabet
         self.num_kmers = len(alphabet) ** k
-        self.array = np.zeros(len(alphabet) ** k, dtype=int)
+        if array is not None:
+            self.array = array
+        else:
+            self.array = np.zeros(len(alphabet) ** k, dtype=int)
 
     def __add__(self, other):
         if self.k != other.k or self.alphabet != other.alphabet:
@@ -169,12 +248,14 @@ class CountMinKmerCounter(BaseCounter):
     '''
 
     def __init__(self, k, sketchshape=(4, 100000), alphabet='ACGT',
-                 dtype=np.uint16):
+                 dtype=np.uint16, array=None):
         self.k = k
         self.alphabet = alphabet
-        self.num_kmers = len(alphabet) ** k
         self.num_tables, self.table_size = sketchshape
-        self.array = np.zeros(sketchshape, dtype=dtype)
+        if array is not None:
+            self.array = array
+        else:
+            self.array = np.zeros(sketchshape, dtype=dtype)
 
     def __add__(self, other):
         if self.array.shape != other.array.shape or self.k != other.k:
