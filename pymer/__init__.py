@@ -133,7 +133,6 @@ class BaseCounter(object):
         array = bp.unpack_ndarray_str(obj['array'])
         return cls(k, alphabet=alphabet, array=array)
 
-
     def write(self, filename=None):
         array = bp.pack_ndarray_str(self.array)
         obj = {'k': self.k,
@@ -150,10 +149,8 @@ class BaseCounter(object):
             return yaml.dump(obj)
 
 
-
-
-
 class ExactKmerCounter(BaseCounter):
+
     '''Count k-mers in DNA sequences exactly using an array.
 
     .. note:: This class is not suitable for k-mers of more than 12 bases.
@@ -229,6 +226,7 @@ class ExactKmerCounter(BaseCounter):
 
 
 class CountMinKmerCounter(BaseCounter):
+
     '''
     Count k-mers in DNA sequences using a Count-min Sketch
 

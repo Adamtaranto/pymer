@@ -63,24 +63,25 @@ def test_counter_operations():
 
         add = kc + kc
         for mer in all_kmers(2):
-            assert add[mer] == 2 # each kmer twice
+            assert add[mer] == 2  # each kmer twice
 
         sub = add - kc
         for mer in all_kmers(2):
-            assert sub[mer] == 1 # back to once
+            assert sub[mer] == 1  # back to once
 
         sub -= kc
         sub -= kc
         for mer in all_kmers(2):
-            assert sub[mer] == 0, (sub[mer], kc) # caps at zero even after -2
+            assert sub[mer] == 0, (sub[mer], kc)  # caps at zero even after -2
 
     for kc in [ExactKmerCounter(2), CountMinKmerCounter(2, (4, 100000))]:
         do_test(kc)
 
+
 def test_counter_consume():
     def do_test(kc):
         for mer in all_kmers(3):
-            assert kc[mer] == 0 # zero at start
+            assert kc[mer] == 0  # zero at start
 
         kc.consume(K3_DBS)
         for mer in all_kmers(3):
