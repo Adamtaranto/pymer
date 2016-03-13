@@ -35,27 +35,3 @@ def iter_kmers(str seq, int k):
         if end >= k - 1:
             # Only yield once an entire kmer has been loaded into h
             yield h
-
-cdef rjmix(u64 value, u32 seed):
-    # An adaptation of Robert Jenkins' 96 bit Mix function
-    cdef u64 two32 = 0xFFFFFFFFFF
-
-    # use the upper & lower 32 bits of value as a & b
-    cdef u32 a = (value & two32 << 32) >> 32
-    cdef u32 b = value & two32
-    cdef u32 c = seed
-
-    # below is the original mix function
-    a=a-b;  a=a-c;  a=a^(c >> 13);
-    b=b-c;  b=b-a;  b=b^(a << 8);
-    c=c-a;  c=c-b;  c=c^(b >> 13);
-    a=a-b;  a=a-c;  a=a^(c >> 12);
-    b=b-c;  b=b-a;  b=b^(a << 16);
-    c=c-a;  c=c-b;  c=c^(b >> 5);
-    a=a-b;  a=a-c;  a=a^(c >> 3);
-    b=b-c;  b=b-a;  b=b^(a << 10);
-    c=c-a;  c=c-b;  c=c^(b >> 15);
-    return c
-
-def inthash(int value, int seed=0):
-    return rjmix(value, seed)
