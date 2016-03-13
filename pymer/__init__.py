@@ -1,3 +1,54 @@
+'''
+Nucleotide word (k-mer) counters (:mod:`pymer`)
+===============================================
+
+.. currentmodule:: pymer
+
+This package provides several classes and utilities for counting k-mers in DNA
+sequences.
+
+Data Structures
+---------------
+
+.. autosummary::
+    :toctree: generated/
+
+    ExactKmerCounter
+    CountMinKmerCounter
+
+Examples
+--------
+
+.. note:: The API demonstrated below applies to all Counters, though Counter
+          intialisation varies.
+
+>>> kc = ExactKmerCounter(4)
+
+DNA sequences are counted using the ``consume`` method:
+
+>>> kc.consume('ACGTACGTACGTAC')
+>>> kc['ACGT']
+3
+
+Sequences can be subtracted using the ``unconsume`` method:
+
+>>> kc.unconsume('ACGTA')
+>>> kc['ACGT']
+2
+>>> kc['CGTA']
+2
+>>> kc['GTAC']
+3
+
+Counters can be added and subtracted:
+>>> kc += kc
+>>> kc['GTAC']
+6
+>>> kc -= kc
+>>> kc['GTAC']
+0
+'''
+
 from __future__ import absolute_import, division, print_function
 import numpy as np
 from xxhash import xxh64
@@ -8,31 +59,36 @@ from ._hash import (
 )
 
 __all__ = [
-    'KmerCounter',
+    'ExactKmerCounter',
     'CountMinKmerCounter',
     'iter_kmers',
     'hash_to_kmer',
 ]
 
-class KmerCounter(object):
-    '''
-    Count k-mers in DNA sequences.
 
-    DNA sequences are counted using the .consume method:
+class BaseCounter(object):
+    def consume(self, seq):
+        '''Counts all k-mers in sequence.'''
+        for kmer in iter_kmers(seq, self.k):
+            self[kmer] += 1
 
-    >>> kc = KmerCounter(4)
-    >>> kc.consume('ACGTACGTACGT')
-    >>> kc['ACGT']
-    3
+    def unconsume(self, seq):
+        '''Subtracts all k-mers in sequence.'''
+        for kmer in iter_kmers(seq, self.k):
+            self[kmer] = max(self[kmer] - 1, 0)
 
-    KmerCounters can be added and subtracted:
-    >>> kc += kc
-    >>> kc['ACGT']
-    6
-    >>> kc -= kc
-    >>> kc['ACGT']
-    0
 
+class ExactKmerCounter(BaseCounter):
+    '''Count k-mers in DNA sequences exactly using an array.
+
+    .. note:: This class is not suitable for k-mers of more than 12 bases.
+
+    Parameters
+    ----------
+    k : int
+        K-mer length
+    alphabet : list-like (str, bytes, list, set, tuple) of letters
+        Alphabet over which values are defined
     '''
 
     def __init__(self, k, alphabet='ACGT'):
@@ -79,38 +135,6 @@ class KmerCounter(object):
             item = kmer_hash(item)
         self.array[item] = val
 
-
-    def consume(self, seq):
-        '''Counts all k-mers in sequence.
-
-        >>> kc = KmerCounter(2)
-        >>> kc.consume('AAAA')
-        >>> kc['AA']
-        3
-        '''
-        for kmer in iter_kmers(seq, self.k):
-            self.array[kmer] += 1
-
-    def unconsume(self, seq):
-        '''Subtracts all k-mers in sequence.
-        >>> kc = KmerCounter(2)
-        >>> kc.consume('AAAA')
-        >>> kc['AA']
-        3
-        >>> kc.unconsume('AA')
-        >>> kc['AA']
-        2
-
-        Never gives negative numbers:
-        >>> kc['AA']
-        2
-        >>> kc.unconsume('AAAA')
-        >>> kc['AA']
-        0
-        '''
-        for kmer in iter_kmers(seq, self.k):
-            self.array[kmer] = max(self.array[kmer] - 1, 0)
-
     def to_dict(self, sparse=True):
         d = {}
         for kmer in range(self.num_kmers):
@@ -126,25 +150,22 @@ class KmerCounter(object):
             print(kmer, count, sep=sep, file=file)
 
 
-class CountMinKmerCounter(object):
+class CountMinKmerCounter(BaseCounter):
     '''
     Count k-mers in DNA sequences using a Count-min Sketch
 
-    DNA sequences are counted using the .consume method:
-
-    >>> kc = CountMinKmerCounter(4, sketchshape=(4, 10000))
-    >>> kc.consume('ACGTACGTACGT')
-    >>> kc['ACGT']
-    3
-
-    CountMinKmerCounters can be added and subtracted:
-    >>> kc += kc
-    >>> kc['ACGT']
-    6
-    >>> kc -= kc
-    >>> kc['ACGT']
-    0
-
+    Parameters
+    ----------
+    k : int
+        K-mer length
+    sketchshape: tuple-like
+        Number of tables and table size of the Count-min Sketch. For example,
+        sketchshape=(4, 100) makes a Count-min Sketch with 4 tables of 100
+        bins.
+    alphabet : list-like of letters, optional
+        Alphabet over which values are defined. Default ``'ACGT'``.
+    dtype: numpy data type
+        Count-min Sketch bin data type. Default ``np.uint16``
     '''
 
     def __init__(self, k, sketchshape=(4, 100000), alphabet='ACGT',
@@ -162,7 +183,10 @@ class CountMinKmerCounter(object):
         x = self.__class__(self.k, self.array.shape, self.alphabet,
                            self.array.dtype)
         x.array = self.array.copy()
+        dtypemax = np.iinfo(x.array.dtype).max
+        overflowidx = (dtypemax - x.array) < other.array
         x.array += other.array
+        x.array[overflowidx] = dtypemax
         return x
 
     def __sub__(self, other):
@@ -172,8 +196,9 @@ class CountMinKmerCounter(object):
         x = self.__class__(self.k, self.array.shape, self.alphabet,
                            self.array.dtype)
         x.array = self.array.copy()
+        gtidx = x.array < other.array
         x.array -= other.array
-        x.array = x.array.clip(min=0)
+        x.array[gtidx] = 0
         return x
 
     def __len__(self):
@@ -202,35 +227,3 @@ class CountMinKmerCounter(object):
             idx = xxh64(item.to_bytes(8, 'little'), seed=tab).intdigest()
             idx %= self.table_size
             self.array[tab, idx] = val
-
-
-    def consume(self, seq):
-        '''Counts all k-mers in sequence.
-
-        >>> kc = CountMinKmerCounter(2)
-        >>> kc.consume('AAAA')
-        >>> kc['AA']
-        3
-        '''
-        for kmer in iter_kmers(seq, self.k):
-            self[kmer] += 1
-
-    def unconsume(self, seq):
-        '''Subtracts all k-mers in sequence.
-        >>> kc = CountMinKmerCounter(2)
-        >>> kc.consume('AAAA')
-        >>> kc['AA']
-        3
-        >>> kc.unconsume('AA')
-        >>> kc['AA']
-        2
-
-        Never gives negative numbers:
-        >>> kc['AA']
-        2
-        >>> kc.unconsume('AAAA')
-        >>> kc['AA']
-        0
-        '''
-        for kmer in iter_kmers(seq, self.k):
-            self[kmer] = max(self[kmer] - 1, 0)

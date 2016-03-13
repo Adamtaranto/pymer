@@ -2,7 +2,7 @@ import numpy as np
 import itertools as itl
 
 from . import (
-    KmerCounter,
+    ExactKmerCounter,
     CountMinKmerCounter,
 )
 from ._hash import (
@@ -22,14 +22,14 @@ def all_kmers(k):
 
 
 def test_counter_init():
-    kc = KmerCounter(5)
+    kc = ExactKmerCounter(5)
     assert kc.k == 5
     assert kc.num_kmers == 4**5
     assert list(kc.alphabet) == list('ACGT')
     assert np.all(kc.array == np.zeros(4**5, dtype=int))
     assert len(kc) == 0
 
-    kc = KmerCounter(5, alphabet='NOTDNA')
+    kc = ExactKmerCounter(5, alphabet='NOTDNA')
     assert kc.k == 5
     assert kc.num_kmers == 6**5
     assert list(kc.alphabet) == list('NOTDNA')
@@ -63,29 +63,21 @@ def test_counter_operations():
 
         add = kc + kc
         for mer in all_kmers(2):
-            assert kc[mer] == 2 # each kmer twice
+            assert add[mer] == 2 # each kmer twice
 
         sub = add - kc
         for mer in all_kmers(2):
-            assert kc[mer] == 1 # back to once
+            assert sub[mer] == 1 # back to once
 
         sub -= kc
         sub -= kc
         for mer in all_kmers(2):
-            assert kc[mer] == 0 # caps at zero even after -2
+            assert sub[mer] == 0, (sub[mer], kc) # caps at zero even after -2
 
-    for kc in [KmerCounter(2), CountMinKmerCounter(2, (4, 100000))]:
+    for kc in [ExactKmerCounter(2), CountMinKmerCounter(2, (4, 100000))]:
         do_test(kc)
 
 def test_counter_consume():
-    kc = KmerCounter(3)
-    kc.consume(K3_DBS)
-    assert np.all(kc.array == np.ones(4**3, dtype=int))
-
-    kc.unconsume('ACT')
-    assert kc['ACT'] == 0
-
-def test_counter_operations():
     def do_test(kc):
         for mer in all_kmers(3):
             assert kc[mer] == 0 # zero at start
@@ -98,5 +90,5 @@ def test_counter_operations():
         for mer in all_kmers(3):
             assert kc[mer] == 0  # back to zero after unconsume
 
-    for kc in [KmerCounter(3), CountMinKmerCounter(3, (4, 100000))]:
+    for kc in [ExactKmerCounter(3), CountMinKmerCounter(3, (4, 100000))]:
         do_test(kc)
