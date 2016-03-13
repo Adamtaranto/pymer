@@ -16,3 +16,6 @@ dist
 
 # Cython compiled files (for now)
 *.c
+
+#doc temps
+doc/_build

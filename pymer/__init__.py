@@ -1,20 +1,8 @@
 '''
-Nucleotide word (k-mer) counters (:mod:`pymer`)
-===============================================
-
 .. currentmodule:: pymer
 
 This package provides several classes and utilities for counting k-mers in DNA
 sequences.
-
-Data Structures
----------------
-
-.. autosummary::
-    :toctree: generated/
-
-    ExactKmerCounter
-    CountMinKmerCounter
 
 Examples
 --------
@@ -55,6 +43,18 @@ counter is writen, with arrays compressed with bloscpack.
 >>> new_kc = ExactKmerCounter.read(string=dumped)
 >>> (kc.array == new_kc.array).all()
 True
+
+Data Structures
+---------------
+
+.. autosummary::
+
+    ExactKmerCounter
+    CountMinKmerCounter
+
+.. autoclass:: ExactKmerCounter
+
+.. autoclass:: CountMinKmerCounter
 '''
 
 # Copyright 2016 Kevin Murray <spam@kdmurray.id.au>
