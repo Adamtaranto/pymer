@@ -92,6 +92,11 @@ from ._hash import (
     hash_to_kmer,
 )
 
+from ._cms import (
+    cms_getitem,
+    cms_setitem,
+)
+
 
 __all__ = [
     'ExactKmerCounter',
@@ -288,12 +293,7 @@ class CountMinKmerCounter(BaseCounter):
                 msg = "KmerCounter must be queried with k-length kmers"
                 return ValueError(msg)
             item = next(iter_kmers(item, self.k))
-        mx = 0
-        for tab in range(self.num_tables):
-            idx = xxh64(struct.pack('Q', item), seed=tab).intdigest()
-            idx %= self.table_size
-            mx = max(mx, self.array[tab, idx])
-        return mx
+        return cms_getitem(self.array, item)
 
     def __setitem__(self, item, val):
         if isinstance(item, (str, bytes)):
@@ -301,7 +301,4 @@ class CountMinKmerCounter(BaseCounter):
                 msg = "KmerCounter must be queried with k-length kmers"
                 return ValueError(msg)
             item = kmer_hash(item)
-        for tab in range(self.num_tables):
-            idx = xxh64(struct.pack('Q', item), seed=tab).intdigest()
-            idx %= self.table_size
-            self.array[tab, idx] = val
+        cms_setitem(self.array, item, value)
