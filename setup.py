@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 #
 # Copyright 2016 Kevin Murray <spam@kdmurray.id.au>
 #
@@ -22,7 +22,6 @@
 # CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-
 from setuptools import setup
 import versioneer
 from Cython.Build import cythonize
@@ -36,10 +35,10 @@ setup(
     packages=['pymer', ],
     version=versioneer.get_version(),
     install_requires=[
+        'pyyaml>=3.11',
         'bloscpack>=0.10.0',
         'xxhash>=0.5.0',
         'numpy>=1.10',
-        'scipy>=0.16',
         'cython>=0.23',
     ],
     setup_requires = [
