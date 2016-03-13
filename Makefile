@@ -1,12 +1,13 @@
 
 .PHONY: all test2 test3 test
 all:
-	./setup.py build_ext --inplace
+	python setup.py build_ext --inplace
+	python3 setup.py build_ext --inplace
 
-test2:
+test2: all
 	nosetests
 
-test3:
+test3: all
 	nosetests3
 
 test: test2 test3
