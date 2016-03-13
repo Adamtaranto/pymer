@@ -28,20 +28,21 @@ import versioneer
 from Cython.Build import cythonize
 
 description = """
-pymer: Fast exact k-mer counting routines for modest K
+pymer: Pure-python fast k-mer counting routines
 """
 
 setup(
-    name="pymer",
+    name='pymer',
     packages=['pymer', ],
     version=versioneer.get_version(),
     install_requires=[
-        "numpy>=1.10",
-        "scipy>=0.16",
-        "cython>=0.23",
+        'xxhash>=0.5.0',
+        'numpy>=1.10',
+        'scipy>=0.16',
+        'cython>=0.23',
     ],
     setup_requires = [
-        "cython>=0.23",
+        'cython>=0.23',
     ],
     tests_require=[
         'nose',

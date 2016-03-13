@@ -212,7 +212,7 @@ class CountMinKmerCounter(BaseCounter):
             item = next(iter_kmers(item, self.k))
         mx = 0
         for tab in range(self.num_tables):
-            idx = xxh64(item.to_bytes(8, 'little'), seed=tab).intdigest()
+            idx = xxh64(struct.pack('Q', item), seed=tab).intdigest()
             idx %= self.table_size
             mx = max(mx, self.array[tab, idx])
         return mx
@@ -224,6 +224,6 @@ class CountMinKmerCounter(BaseCounter):
                 return ValueError(msg)
             item = kmer_hash(item)
         for tab in range(self.num_tables):
-            idx = xxh64(item.to_bytes(8, 'little'), seed=tab).intdigest()
+            idx = xxh64(struct.pack('Q', item), seed=tab).intdigest()
             idx %= self.table_size
             self.array[tab, idx] = val
