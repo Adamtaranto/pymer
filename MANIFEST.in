@@ -1,2 +1,4 @@
 include versioneer.py
 include _version.py
+include pymer/_cms.pyx
+include pymer/_hash.pyx
