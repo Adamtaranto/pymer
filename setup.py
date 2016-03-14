@@ -36,7 +36,7 @@ setup(
     packages=['pymer', ],
     version=versioneer.get_version(),
     install_requires=[
-        'msgpack>=0.4',
+        'msgpack-python>=0.4',
         'bloscpack>=0.10.0',
         'numpy>=1.10',
         'cython>=0.23',
