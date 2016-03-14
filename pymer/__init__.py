@@ -96,6 +96,9 @@ from ._cms import (
     cms_setitem,
 )
 
+from ._version import get_versions
+__version__ = get_versions()['version']
+del get_versions
 
 __all__ = [
     'ExactKmerCounter',
@@ -103,6 +106,8 @@ __all__ = [
     'iter_kmers',
     'hash_to_kmer',
 ]
+
+
 
 
 class BaseCounter(object):

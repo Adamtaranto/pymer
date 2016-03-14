@@ -36,6 +36,7 @@ setup(
     name='pymer',
     packages=['pymer', ],
     version=versioneer.get_version(),
+    cmdclass=versioneer.get_cmdclass(),
     install_requires=[
         'msgpack-python>=0.4',
         'bloscpack>=0.10.0',
