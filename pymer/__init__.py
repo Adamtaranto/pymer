@@ -127,7 +127,7 @@ class BaseCounter(object):
     def read(cls, filename=None, string=None):
 
         if filename is not None:
-            with open(filename, 'b') as fh:
+            with open(filename, 'rb') as fh:
                 obj = msgpack.load(fh, encoding='utf-8')
         else:
             obj = msgpack.loads(string, encoding='utf-8')
