@@ -36,9 +36,8 @@ setup(
     packages=['pymer', ],
     version=versioneer.get_version(),
     install_requires=[
-        'pyyaml>=3.11',
+        'msgpack>=0.4',
         'bloscpack>=0.10.0',
-        'xxhash>=0.5.0',
         'numpy>=1.10',
         'cython>=0.23',
     ],
@@ -47,6 +46,8 @@ setup(
     ],
     tests_require=[
         'nose',
+        'blessings',
+        'docopt'
     ],
     ext_modules=cythonize([
         Extension(

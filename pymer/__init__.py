@@ -36,8 +36,8 @@ Counters can be added and subtracted:
 >>> kc['GTAC']
 0
 
-Counters may be read and written to a file. A YAML object describing the
-counter is writen, with arrays compressed with bloscpack.
+Counters may be read and written to a file. A msgpack object describing the
+counter is writen, with arrays compressed using bloscpack.
 
 >>> dumped = kc.write()
 >>> new_kc = ExactKmerCounter.read(string=dumped)
@@ -80,7 +80,7 @@ Data Structures
 # SOFTWARE.
 
 from __future__ import absolute_import, division, print_function
-import yaml
+import msgpack
 import struct
 
 import bloscpack as bp
@@ -123,10 +123,10 @@ class BaseCounter(object):
     def read(cls, filename=None, string=None):
 
         if filename is not None:
-            with open(filename) as fh:
-                obj = yaml.load(fh)
+            with open(filename, 'b') as fh:
+                obj = msgpack.load(fh, encoding='utf-8')
         else:
-            obj = yaml.load(string)
+            obj = msgpack.loads(string, encoding='utf-8')
         if obj['class'] != cls.__name__:
             msg = 'Class mismatch: use {}.read() instead'.format(obj['class'])
             raise ValueError(msg)
@@ -148,10 +148,10 @@ class BaseCounter(object):
                }
 
         if filename is not None:
-            with open(filename, 'w') as fh:
-                yaml.dump(obj, fh)
+            with open(filename, 'wb') as fh:
+                msgpack.dump(obj, fh, use_bin_type=True)
         else:
-            return yaml.dump(obj)
+            return msgpack.dumps(obj, use_bin_type=True)
 
 
 class ExactKmerCounter(BaseCounter):
