@@ -138,7 +138,8 @@ class BaseCounter(object):
         return cls(k, alphabet=alphabet, array=array)
 
     def write(self, filename=None):
-        array = bp.pack_ndarray_str(self.array)
+        bp_args = bp.BloscArgs(cname='lz4', clevel=9, shuffle=False)
+        array = bp.pack_ndarray_str(self.array, blosc_args=bp_args)
         obj = {'k': self.k,
                'alphabet': list(self.alphabet),
                'array': array,
