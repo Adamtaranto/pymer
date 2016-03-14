@@ -6,10 +6,6 @@ dist: trusty
 python:
   - 3.4
 
-before_install:
-  - sudo apt-get update
-  - sudo apt-get upgrade -yy
-
 install:
   - pip install cython numpy nose
   - python setup.py install
