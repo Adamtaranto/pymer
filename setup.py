@@ -26,6 +26,7 @@ from setuptools import setup
 import versioneer
 from setuptools.extension import Extension
 from Cython.Build import cythonize
+import numpy
 
 description = """
 pymer: Pure-python fast k-mer counting routines
@@ -59,6 +60,9 @@ setup(
             'pymer._cms', [
                 'pymer/_cms.pyx',
                 'pymer/xxhash.c',
+             ],
+             include_dirs=[
+                 numpy.get_include(),
              ],
         ),
     ]),
