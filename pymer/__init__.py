@@ -85,7 +85,6 @@ import struct
 
 import bloscpack as bp
 import numpy as np
-from xxhash import xxh64
 
 from ._hash import (
     iter_kmers,
