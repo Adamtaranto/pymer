@@ -293,7 +293,7 @@ class CountMinKmerCounter(BaseCounter):
                 msg = "KmerCounter must be queried with k-length kmers"
                 return ValueError(msg)
             item = next(iter_kmers(item, self.k))
-        return cms_getitem(self.array, item)
+        return cms_getitem(self.array, item, *self.array.shape)
 
     def __setitem__(self, item, value):
         if isinstance(item, (str, bytes)):
@@ -301,4 +301,4 @@ class CountMinKmerCounter(BaseCounter):
                 msg = "KmerCounter must be queried with k-length kmers"
                 return ValueError(msg)
             item = kmer_hash(item)
-        cms_setitem(self.array, item, value)
+        cms_setitem(self.array, item, value, *self.array.shape)

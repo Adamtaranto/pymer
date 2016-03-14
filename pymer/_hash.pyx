@@ -2,11 +2,12 @@
 
 import numpy as np
 cimport numpy as cnp
-
-
 cimport cython
+
+
 ctypedef unsigned long long int u64
 ctypedef unsigned int u32
+
 
 @cython.boundscheck(False)
 def hash_to_kmer(int h, int k):
@@ -19,6 +20,7 @@ def hash_to_kmer(int h, int k):
         nt = (h >> (2*x)) & 0x03
         kmer.append(chr(nts[nt]))
     return ''.join(reversed(kmer))
+
 
 def iter_kmers(str seq, int k):
     '''Iterator over hashed k-mers in a string DNA sequence.

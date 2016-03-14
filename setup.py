@@ -49,11 +49,16 @@ setup(
         'nose',
     ],
     ext_modules=cythonize([
-        Extension('pymer._hash',
-                  ['pymer/_hash.pyx', ],
+        Extension(
+            'pymer._hash', [
+                'pymer/_hash.pyx',
+            ],
         ),
-        Extension('pymer._cms',
-                  ['pymer/_cms.pyx', ],
+        Extension(
+            'pymer._cms', [
+                'pymer/_cms.pyx',
+                'pymer/xxhash.c',
+             ],
         ),
     ]),
     description=description,
