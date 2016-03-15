@@ -23,7 +23,7 @@ def cms_getitem(np.ndarray[DTYPE, ndim=2] array not None, u64 item, u64 ntab, u6
     cdef u16 array_val
     for tab in range(ntab):
         idx = u64hash(item, tab) % tabsize
-        array_val = array[tab, idx]
+        array_val = array[idx, tab]
         if mx < array_val:
             mx = array_val
     return mx
@@ -34,5 +34,5 @@ def cms_setitem(np.ndarray[DTYPE, ndim=2] array not None, u64 item, u64 value, u
     cdef u64 idx, tab
     for tab in range(ntab):
         idx = u64hash(item, tab) % tabsize
-        array[tab, idx] = value
+        array[idx, tab] = value
 

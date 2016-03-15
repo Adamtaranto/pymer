@@ -80,10 +80,12 @@ Data Structures
 # SOFTWARE.
 
 from __future__ import absolute_import, division, print_function
-import msgpack
 import struct
 
 import bloscpack as bp
+import bcolz
+from bcolz import carray
+import msgpack
 import numpy as np
 
 from ._hash import (
@@ -108,8 +110,6 @@ __all__ = [
 ]
 
 
-
-
 class BaseCounter(object):
     file_version = 1
 
@@ -124,13 +124,13 @@ class BaseCounter(object):
             self[kmer] = max(self[kmer] - 1, 0)
 
     @classmethod
-    def read(cls, filename=None, string=None):
-
+    def read(cls, filename=None, string=None, force_numpy=True):
         if filename is not None:
-            with open(filename, 'rb') as fh:
-                obj = msgpack.load(fh, encoding='utf-8')
+            array = bcolz.open(filename)
+            obj = array.attrs
         else:
             obj = msgpack.loads(string, encoding='utf-8')
+            array = bp.unpack_ndarray_str(obj.pop('array'))
         if obj['class'] != cls.__name__:
             msg = 'Class mismatch: use {}.read() instead'.format(obj['class'])
             raise ValueError(msg)
@@ -139,23 +139,26 @@ class BaseCounter(object):
             raise ValueError(msg)
         k = obj['k']
         alphabet = obj['alphabet']
-        array = bp.unpack_ndarray_str(obj['array'])
+        if force_numpy and not isinstance(array, np.ndarray):
+            array = np.array(array)
         return cls(k, alphabet=alphabet, array=array)
 
     def write(self, filename=None):
-        bp_args = bp.BloscArgs(cname='lz4', clevel=9, shuffle=False)
-        array = bp.pack_ndarray_str(self.array, blosc_args=bp_args)
         obj = {'k': self.k,
                'alphabet': list(self.alphabet),
-               'array': array,
                'class': self.__class__.__name__,
                'fileversion': self.file_version,
+               'pymerversion': __version__,
                }
-
         if filename is not None:
-            with open(filename, 'wb') as fh:
-                msgpack.dump(obj, fh, use_bin_type=True)
+            array = carray(self.array, rootdir=filename, mode='w')
+            for attr, val in obj.items():
+                array.attrs[attr] = val
+            attr.flush()
         else:
+            bp_args = bp.BloscArgs(cname='lz4', clevel=9, shuffle=False)
+            array = bp.pack_ndarray_str(self.array, blosc_args=bp_args)
+            obj['array'] = array
             return msgpack.dumps(obj, use_bin_type=True)
 
 
@@ -180,7 +183,7 @@ class ExactKmerCounter(BaseCounter):
         if array is not None:
             self.array = array
         else:
-            self.array = np.zeros(len(alphabet) ** k, dtype=int)
+            self.array = np.zeros((len(alphabet) ** k, 1), dtype=int)
 
     def __add__(self, other):
         if self.k != other.k or self.alphabet != other.alphabet:
@@ -210,7 +213,7 @@ class ExactKmerCounter(BaseCounter):
                 msg = "KmerCounter must be queried with k-length kmers"
                 return ValueError(msg)
             item = next(iter_kmers(item, self.k))
-        return self.array[item]
+        return self.array[item, 0]
 
     def __setitem__(self, item, val):
         if isinstance(item, (str, bytes)):
@@ -218,7 +221,7 @@ class ExactKmerCounter(BaseCounter):
                 msg = "KmerCounter must be queried with k-length kmers"
                 return ValueError(msg)
             item = kmer_hash(item)
-        self.array[item] = val
+        self.array[item, 0] = val
 
     def to_dict(self, sparse=True):
         d = {}
@@ -258,17 +261,19 @@ class CountMinKmerCounter(BaseCounter):
                  dtype=np.uint16, array=None):
         self.k = k
         self.alphabet = alphabet
-        self.num_tables, self.table_size = sketchshape
+        self.sketchshape = sketchshape
         if array is not None:
             self.array = array
         else:
-            self.array = np.zeros(sketchshape, dtype=dtype)
+            num_tables, table_size = sketchshape
+            # We store the sketch transposed to play nicer with bcolz.carray
+            self.array = np.zeros((table_size, num_tables), dtype=dtype)
 
     def __add__(self, other):
         if self.array.shape != other.array.shape or self.k != other.k:
             msg = "Cannot add counters unless k and sketch shape are equal."
             raise ValueError(msg)
-        x = self.__class__(self.k, self.array.shape, self.alphabet,
+        x = self.__class__(self.k, self.sketchshape, self.alphabet,
                            self.array.dtype)
         x.array = self.array.copy()
         dtypemax = np.iinfo(x.array.dtype).max
@@ -281,7 +286,7 @@ class CountMinKmerCounter(BaseCounter):
         if self.array.shape != other.array.shape or self.k != other.k:
             msg = "Cannot add counters unless k and sketch shape are equal."
             raise ValueError(msg)
-        x = self.__class__(self.k, self.array.shape, self.alphabet,
+        x = self.__class__(self.k, self.sketchshape, self.alphabet,
                            self.array.dtype)
         x.array = self.array.copy()
         gtidx = x.array < other.array
@@ -298,7 +303,7 @@ class CountMinKmerCounter(BaseCounter):
                 msg = "KmerCounter must be queried with k-length kmers"
                 return ValueError(msg)
             item = next(iter_kmers(item, self.k))
-        return cms_getitem(self.array, item, *self.array.shape)
+        return cms_getitem(self.array, item, *self.sketchshape)
 
     def __setitem__(self, item, value):
         if isinstance(item, (str, bytes)):
@@ -306,4 +311,4 @@ class CountMinKmerCounter(BaseCounter):
                 msg = "KmerCounter must be queried with k-length kmers"
                 return ValueError(msg)
             item = kmer_hash(item)
-        cms_setitem(self.array, item, value, *self.array.shape)
+        cms_setitem(self.array, item, value, *self.sketchshape)
