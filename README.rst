@@ -17,7 +17,7 @@ MIT/Expat licensed
 Docs
 ----
 
-Are hosted at https://pymer.rtfd.org.
+Are hosted at https://pymer.readthedocs.org.
 
 Installation
 ------------
