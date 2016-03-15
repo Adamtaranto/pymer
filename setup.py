@@ -25,18 +25,39 @@
 from setuptools import setup
 import versioneer
 from setuptools.extension import Extension
-from Cython.Build import cythonize
 import numpy
+from setuptools.command.test import test as TestCommand
+
+EXT='c'
+try:
+    from Cython.Build import cythonize
+    EXT='pyx'
+except ImportError:
+    def cythonize(x): return x
 
 description = """
 pymer: Pure-python fast k-mer counting routines
 """
 
+class NoseCommand(TestCommand):
+    def finalize_options(self):
+        TestCommand.finalize_options(self)
+        self.test_args = []
+        self.test_suite = True
+
+    def run_tests(self):
+        # Run nose ensuring that argv simulates running nosetests directly
+        import nose
+        nose.run_exit(argv=['nosetests'])
+
+cmdclasses=versioneer.get_cmdclass()
+cmdclasses['test'] = NoseCommand
+
 setup(
     name='pymer',
     packages=['pymer', ],
     version=versioneer.get_version(),
-    cmdclass=versioneer.get_cmdclass(),
+    cmdclass=cmdclasses,
     install_requires=[
         'msgpack-python>=0.4',
         'bloscpack>=0.10.0',
@@ -54,7 +75,7 @@ setup(
     ext_modules=cythonize([
         Extension(
             'pymer._hash', [
-                'pymer/_hash.pyx',
+                'pymer/_hash.{}'.format(EXT),
             ],
             include_dirs=[
                 numpy.get_include(),
@@ -62,7 +83,7 @@ setup(
         ),
         Extension(
             'pymer._cms', [
-                'pymer/_cms.pyx',
+                'pymer/_cms.{}'.format(EXT),
                 'pymer/xxhash.c',
              ],
              include_dirs=[
