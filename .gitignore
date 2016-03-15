@@ -13,9 +13,11 @@
 .coverage
 build
 dist
+.tox
 
-# Cython compiled files (for now)
-*.c
+# Cython compiled files
+pymer/_cms.c
+pymer/_hash.c
 
 #doc temps
 doc/_build
