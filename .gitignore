@@ -2,6 +2,7 @@
 *.yaml
 *.yml
 !.travis.yml
+!circle.yml
 *.swp
 
 # Python junk
