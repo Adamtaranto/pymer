@@ -9,7 +9,7 @@ python:
 
 install:
   - pip install -U cython numpy nose
-  - python -c 'import numpy; print(numpy.get_include())'
+  - pip install -r requirements.txt
   - python setup.py install
 
 script:
