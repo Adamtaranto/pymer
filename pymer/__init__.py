@@ -154,7 +154,7 @@ class BaseCounter(object):
             array = carray(self.array, rootdir=filename, mode='w')
             for attr, val in obj.items():
                 array.attrs[attr] = val
-            attr.flush()
+            array.flush()
         else:
             bp_args = bp.BloscArgs(cname='lz4', clevel=9, shuffle=False)
             array = bp.pack_ndarray_str(self.array, blosc_args=bp_args)
