@@ -56,6 +56,9 @@ setup(
             'pymer._hash', [
                 'pymer/_hash.pyx',
             ],
+            include_dirs=[
+                numpy.get_include(),
+            ],
         ),
         Extension(
             'pymer._cms', [
