@@ -61,6 +61,7 @@ setup(
     install_requires=[
         'msgpack-python>=0.4',
         'bloscpack>=0.10.0',
+        'bcolz',
         'numpy>=1.10',
         'cython>=0.23',
     ],

@@ -1,4 +1,5 @@
 msgpack-python>=0.4
+bcolz
 bloscpack>=0.10.0
 numpy>=1.10
 cython>=0.23
