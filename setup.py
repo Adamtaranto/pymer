@@ -67,9 +67,12 @@ setup(
     ],
     setup_requires = [
         'cython>=0.23',
+        'nose',
+        'nose-cov',
     ],
     tests_require=[
         'nose',
+        'nose-cov',
         'blessings',
         'docopt'
     ],

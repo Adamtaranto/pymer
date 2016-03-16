@@ -15,6 +15,7 @@
 build
 dist
 .tox
+htmlcov
 
 # Cython compiled files
 pymer/_cms.c
