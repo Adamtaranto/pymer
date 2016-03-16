@@ -24,5 +24,5 @@ Installation
 
 .. code-block:: shell
 
-    pip install cython
+    pip install cython numpy nose
     pip install pymer

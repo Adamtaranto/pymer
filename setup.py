@@ -36,7 +36,7 @@ except ImportError:
     def cythonize(x): return x
 
 description = """
-pymer: Pure-python fast k-mer counting routines
+pymer: Pythonic fast k-mer counting routines
 """
 
 class NoseCommand(TestCommand):
@@ -59,6 +59,7 @@ setup(
     version=versioneer.get_version(),
     cmdclass=cmdclasses,
     install_requires=[
+        'nose',
         'msgpack-python>=0.4',
         'bloscpack>=0.10.0',
         'bcolz',
@@ -67,8 +68,6 @@ setup(
     ],
     setup_requires = [
         'cython>=0.23',
-        'nose',
-        'nose-cov',
     ],
     tests_require=[
         'nose',
