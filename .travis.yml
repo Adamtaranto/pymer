@@ -17,8 +17,12 @@ before_install:
   - source activate test-environment
 
 install:
+  - pip install coveralls
   - pip install -r requirements.txt
   - python setup.py install
 
 script:
- - python setup.py test
+  - coverage run --source pymer setup.py test
+
+after_success:
+  - coveralls
