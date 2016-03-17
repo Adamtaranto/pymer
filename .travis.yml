@@ -22,7 +22,7 @@ install:
   - python setup.py install
 
 script:
-  - coverage run --source pymer setup.py test
+  - python setup.py test
 
 after_success:
   - coveralls
