@@ -1,0 +1,2 @@
+[run]
+omit = pymer/_version.py
