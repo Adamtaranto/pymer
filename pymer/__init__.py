@@ -113,15 +113,23 @@ __all__ = [
 class BaseCounter(object):
     file_version = 1
 
+    def _incr(self, kmer, by=1):
+        typemax = np.iinfo(self.array.dtype).max
+        self[kmer] = min(typemax, self[kmer] + by)
+
+    def _decr(self, kmer, by=1):
+        typemin = np.iinfo(self.array.dtype).min
+        self[kmer] = max(typemin, self[kmer] - by)
+
     def consume(self, seq):
         '''Counts all k-mers in sequence.'''
         for kmer in iter_kmers(seq, self.k):
-            self[kmer] += 1
+            self._incr(kmer)
 
     def unconsume(self, seq):
         '''Subtracts all k-mers in sequence.'''
         for kmer in iter_kmers(seq, self.k):
-            self[kmer] = max(self[kmer] - 1, 0)
+            self._decr(kmer)
 
     @classmethod
     def read(cls, filename=None, string=None, force_numpy=True):

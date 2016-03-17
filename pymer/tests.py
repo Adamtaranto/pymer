@@ -93,3 +93,13 @@ def test_counter_consume():
 
     for kc in [ExactKmerCounter(3), CountMinKmerCounter(3, (4, 100000))]:
         do_test(kc)
+
+
+def test_cms_counter_overflow():
+    K = 2
+    kc = CountMinKmerCounter(K, (2, 100))
+
+    for _ in range(2**16):
+        kc.consume('AA')
+
+    assert kc['AA'] == 2**16 - 1, kc['AA']
