@@ -11,3 +11,6 @@ test3: all
 	nosetests3
 
 test: test2 test3
+
+htmlcov:
+	nosetests --with-cov --cov-report html --cover-package pymer
