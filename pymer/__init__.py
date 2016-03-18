@@ -51,6 +51,7 @@ Sequences can be subtracted using the ``unconsume`` method:
 3
 
 Counters can be added and subtracted:
+
 >>> kc += kc
 >>> kc['GTAC']
 6
