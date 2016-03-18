@@ -73,7 +73,8 @@ setup(
         'nose',
         'nose-cov',
         'blessings',
-        'docopt'
+        'docopt',
+        'tempdir',
     ],
     ext_modules=cythonize([
         Extension(

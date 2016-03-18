@@ -1,4 +1,6 @@
 import numpy as np
+from tempdir import run_in_tempdir
+
 import itertools as itl
 
 from . import (
@@ -103,3 +105,19 @@ def test_cms_counter_overflow():
         kc.consume('AA')
 
     assert kc['AA'] == 2**16 - 1, kc['AA']
+
+
+@run_in_tempdir()
+def test_counter_io():
+    for CounterType in ExactKmerCounter, CountMinKmerCounter:
+        mer = 'AA'
+
+        kc = CounterType(len(mer))
+
+        kc.consume(mer)
+        assert kc[mer] == 1
+
+        filename = 'counter.bcz'
+        kc.write(filename)
+        newkc = CounterType.read(filename)
+        assert kc[mer] == 1
