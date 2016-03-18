@@ -96,6 +96,8 @@ from ._hash import (
 from ._cms import (
     cms_getitem,
     cms_setitem,
+    cms_incritem,
+    cms_decritem,
 )
 
 from ._version import get_versions
@@ -114,12 +116,10 @@ class BaseCounter(object):
     file_version = 1
 
     def _incr(self, kmer, by=1):
-        typemax = np.iinfo(self.array.dtype).max
-        self[kmer] = min(typemax, self[kmer] + by)
+        self[kmer] = min(self.typemax, self[kmer] + by)
 
     def _decr(self, kmer, by=1):
-        typemin = np.iinfo(self.array.dtype).min
-        self[kmer] = max(typemin, self[kmer] - by)
+        self[kmer] = max(self.typemin, self[kmer] - by)
 
     def consume(self, seq):
         '''Counts all k-mers in sequence.'''
@@ -192,6 +192,8 @@ class ExactKmerCounter(BaseCounter):
             self.array = array
         else:
             self.array = np.zeros((len(alphabet) ** k, 1), dtype=int)
+        self.typemax = np.iinfo(self.array.dtype).max
+        self.typemin = np.iinfo(self.array.dtype).min
 
     def __add__(self, other):
         if self.k != other.k or self.alphabet != other.alphabet:
@@ -276,6 +278,8 @@ class CountMinKmerCounter(BaseCounter):
             num_tables, table_size = sketchshape
             # We store the sketch transposed to play nicer with bcolz.carray
             self.array = np.zeros((table_size, num_tables), dtype=dtype)
+        self.typemax = np.iinfo(self.array.dtype).max
+        self.typemin = np.iinfo(self.array.dtype).min
 
     def __add__(self, other):
         if self.array.shape != other.array.shape or self.k != other.k:
@@ -320,3 +324,19 @@ class CountMinKmerCounter(BaseCounter):
                 return ValueError(msg)
             item = kmer_hash(item)
         cms_setitem(self.array, item, value, *self.sketchshape)
+
+    def _incr(self, item, by=1):
+        #if isinstance(item, (str, bytes)):
+        #    if len(item) != self.k:
+        #        msg = "KmerCounter must be queried with k-length kmers"
+        #        return ValueError(msg)
+        #    item = kmer_hash(item)
+        cms_incritem(self.array, item, by, *self.sketchshape)
+
+    def _decr(self, item, by=1):
+        #if isinstance(item, (str, bytes)):
+        #    if len(item) != self.k:
+        #        msg = "KmerCounter must be queried with k-length kmers"
+        #        return ValueError(msg)
+        #    item = kmer_hash(item)
+        cms_decritem(self.array, item, by, *self.sketchshape)
