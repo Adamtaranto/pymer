@@ -25,8 +25,8 @@
 from setuptools import setup
 import versioneer
 from setuptools.extension import Extension
-import numpy
 from setuptools.command.test import test as TestCommand
+from setuptools.command.build_ext import build_ext as OrigBuildExt
 
 EXT='c'
 try:
@@ -50,8 +50,20 @@ class NoseCommand(TestCommand):
         import nose
         nose.run_exit(argv=['nosetests'])
 
+class BuildExt(OrigBuildExt):
+
+    def finalize_options(self):
+        OrigBuildExt.finalize_options(self)
+
+        # Prevent numpy from thinking it is still in its setup process:
+        __builtins__.__NUMPY_SETUP__ = False
+        import numpy
+        self.include_dirs.append(numpy.get_include())
+
+
 cmdclasses=versioneer.get_cmdclass()
 cmdclasses['test'] = NoseCommand
+cmdclasses['build_ext'] = BuildExt
 
 setup(
     name='pymer',
@@ -63,11 +75,11 @@ setup(
         'msgpack-python>=0.4',
         'bloscpack>=0.10.0',
         'bcolz',
-        'numpy>=1.10',
         'cython>=0.23',
     ],
     setup_requires = [
         'cython>=0.23',
+        'numpy>=1.8',
     ],
     tests_require=[
         'nose',
@@ -81,17 +93,11 @@ setup(
             'pymer._hash', [
                 'pymer/_hash.{}'.format(EXT),
             ],
-            include_dirs=[
-                numpy.get_include(),
-            ],
         ),
         Extension(
             'pymer._cms', [
                 'pymer/_cms.{}'.format(EXT),
                 'pymer/xxhash.c',
-             ],
-             include_dirs=[
-                 numpy.get_include(),
              ],
         ),
     ]),
