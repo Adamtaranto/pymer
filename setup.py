@@ -71,7 +71,6 @@ setup(
     version=versioneer.get_version(),
     cmdclass=cmdclasses,
     install_requires=[
-        'nose',
         'msgpack-python>=0.4',
         'bloscpack>=0.10.0',
         'bcolz',
@@ -80,9 +79,9 @@ setup(
     setup_requires = [
         'cython>=0.23',
         'numpy>=1.8',
+        'nose',
     ],
     tests_require=[
-        'nose',
         'nose-cov',
         'blessings',
         'docopt',
