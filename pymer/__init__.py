@@ -59,25 +59,43 @@ Counters can be added and subtracted:
 >>> kc['GTAC']
 0
 
-Counters may be read and written to a file. A msgpack object describing the
-counter is writen, with arrays compressed using bloscpack.
+Counters may be read and written to a file, using ``bcolz``.
 
->>> dumped = kc.write()
->>> new_kc = ExactKmerCounter.read(string=dumped)
+>>> from tempfile import mkdtemp
+>>> from shutil import rmtree
+>>> tmpdir = mkdtemp()
+>>> filename = tmpdir + '/kc.bcz'
+
+(Above we simply create a temporary directory to hold the saved counts.)
+
+>>> kc.write(filename)
+>>> new_kc = ExactKmerCounter.read(filename)
 >>> (kc.array == new_kc.array).all()
 True
+>>> rmtree(tmpdir)
+
 
 Data Structures
 ---------------
+
+Summary
+^^^^^^^
 
 .. autosummary::
 
     ExactKmerCounter
     CountMinKmerCounter
 
+Exact K-mer Counting
+^^^^^^^^^^^^^^^^^^^^
+
 .. autoclass:: ExactKmerCounter
 
+Probablisistic K-mer Counting
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
 .. autoclass:: CountMinKmerCounter
+
 '''
 
 from __future__ import absolute_import, division, print_function
