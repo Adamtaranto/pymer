@@ -151,42 +151,33 @@ class BaseCounter(object):
             self._decr(kmer)
 
     @classmethod
-    def read(cls, filename=None, string=None, force_numpy=True):
-        if filename is not None:
-            array = bcolz.open(filename)
-            obj = array.attrs
-        else:
-            obj = msgpack.loads(string, encoding='utf-8')
-            array = bp.unpack_ndarray_str(obj.pop('array'))
-        if obj['class'] != cls.__name__:
-            msg = 'Class mismatch: use {}.read() instead'.format(obj['class'])
+    def read(cls, filename, force_numpy=True):
+        array = bcolz.open(filename)
+        attrs = array.attrs
+        if attrs['class'] != cls.__name__:
+            msg = 'Class mismatch: use {}.read() instead'.format(attrs['class'])
             raise ValueError(msg)
-        if obj['fileversion'] < cls.file_version:
+        if attrs['fileversion'] != cls.file_version:
             msg = 'File format version mismatch'
             raise ValueError(msg)
-        k = obj['k']
-        alphabet = obj['alphabet']
+        k = attrs['k']
+        alphabet = attrs['alphabet']
         if force_numpy and not isinstance(array, np.ndarray):
             array = np.array(array)
         return cls(k, alphabet=alphabet, array=array)
 
-    def write(self, filename=None):
-        obj = {'k': self.k,
-               'alphabet': list(self.alphabet),
-               'class': self.__class__.__name__,
-               'fileversion': self.file_version,
-               'pymerversion': __version__,
-               }
-        if filename is not None:
-            array = carray(self.array, rootdir=filename, mode='w')
-            for attr, val in obj.items():
-                array.attrs[attr] = val
-            array.flush()
-        else:
-            bp_args = bp.BloscArgs(cname='lz4', clevel=9, shuffle=False)
-            array = bp.pack_ndarray_str(self.array, blosc_args=bp_args)
-            obj['array'] = array
-            return msgpack.dumps(obj, use_bin_type=True)
+    def write(self, filename):
+        attrs = {
+            'k': self.k,
+            'alphabet': list(self.alphabet),
+            'class': self.__class__.__name__,
+            'fileversion': self.file_version,
+            'pymerversion': __version__,
+        }
+        array = carray(self.array, rootdir=filename, mode='w')
+        for attr, val in attrs.items():
+            array.attrs[attr] = val
+        array.flush()
 
 
 class ExactKmerCounter(BaseCounter):
