@@ -71,10 +71,7 @@ setup(
     version=versioneer.get_version(),
     cmdclass=cmdclasses,
     install_requires=[
-        'msgpack-python>=0.4',
-        'bloscpack>=0.10.0',
         'bcolz',
-        'cython>=0.23',
     ],
     setup_requires = [
         'cython>=0.23',
