@@ -101,10 +101,8 @@ Probablisistic K-mer Counting
 from __future__ import absolute_import, division, print_function
 import struct
 
-import bloscpack as bp
 import bcolz
 from bcolz import carray
-import msgpack
 import numpy as np
 
 from ._hash import (
