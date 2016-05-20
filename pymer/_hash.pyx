@@ -50,10 +50,23 @@ def iter_kmers(str seq, int k):
     cdef u64 h = 0
 
     # For each kmer's end nucleotide, bit-shift, add the end and yield
+    cdef u64 skip = 0
     for end in range(len(seq)):
-        n = (ord(seq[end]) & 6) >> 1
-        n ^= n>>1
+        nt = seq[end]
+        if skip > 0:
+            skip -= 1
+        if nt == 'A' or nt == 'a':
+            n = 0
+        elif nt == 'C' or nt == 'c':
+            n = 1
+        elif nt == 'G' or nt == 'g':
+            n = 2
+        elif nt == 'T' or nt == 't':
+            n = 3
+        else:
+            skip = k
+            continue
         h = ((h << 2) | n) & bitmask
-        if end >= k - 1:
+        if end >= k - 1 and skip == 0:
             # Only yield once an entire kmer has been loaded into h
             yield h

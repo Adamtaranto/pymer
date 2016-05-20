@@ -69,6 +69,14 @@ def test_iter_kmers():
     assert (counts == 1).all(), counts
 
 
+def test_iter_kmers_ns():
+    k = 3
+    seq = "ACGTNACGTNCG"
+    expect = [0b000110, 0b011011, 0b000110, 0b011011, ]
+    got = list(iter_kmers(seq, k))
+    assert got == expect, (got, expect)
+
+
 def test_hash_to_kmer():
     k = 2
     hashes = range(4**k)
