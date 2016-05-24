@@ -28,16 +28,17 @@ from setuptools.extension import Extension
 from setuptools.command.test import test as TestCommand
 from setuptools.command.build_ext import build_ext as OrigBuildExt
 
-EXT='c'
+EXT = 'c'
 try:
     from Cython.Build import cythonize
-    EXT='pyx'
+    EXT = 'pyx'
 except ImportError:
     def cythonize(x): return x
 
 description = """
 pymer: Pythonic fast k-mer counting routines
 """
+
 
 class NoseCommand(TestCommand):
     def finalize_options(self):
@@ -50,18 +51,17 @@ class NoseCommand(TestCommand):
         import nose
         nose.run_exit(argv=['nosetests'])
 
+
 class BuildExt(OrigBuildExt):
 
     def finalize_options(self):
         OrigBuildExt.finalize_options(self)
 
-        # Prevent numpy from thinking it is still in its setup process:
-        __builtins__.__NUMPY_SETUP__ = False
         import numpy
         self.include_dirs.append(numpy.get_include())
 
 
-cmdclasses=versioneer.get_cmdclass()
+cmdclasses = versioneer.get_cmdclass()
 cmdclasses['test'] = NoseCommand
 cmdclasses['build_ext'] = BuildExt
 
@@ -73,7 +73,7 @@ setup(
     install_requires=[
         'bcolz',
     ],
-    setup_requires = [
+    setup_requires=[
         'cython>=0.23',
         'numpy>=1.8',
         'nose',
