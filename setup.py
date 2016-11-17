@@ -71,10 +71,9 @@ setup(
     version=versioneer.get_version(),
     cmdclass=cmdclasses,
     install_requires=[
-        'bcolz',
+        'h5py',
     ],
     setup_requires=[
-        'cython>=0.23',
         'numpy>=1.8',
         'nose',
     ],
@@ -89,12 +88,6 @@ setup(
             'pymer._hash', [
                 'pymer/_hash.{}'.format(EXT),
             ],
-        ),
-        Extension(
-            'pymer._cms', [
-                'pymer/_cms.{}'.format(EXT),
-                'pymer/xxhash.c',
-             ],
         ),
     ]),
     description=description,

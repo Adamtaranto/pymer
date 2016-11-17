@@ -42,7 +42,7 @@ def hash_to_kmer(int h, int k):
     return ''.join(reversed(kmer))
 
 
-def iter_kmers(str seq, int k):
+def iter_kmers(str seq, int k, bint canonical=True, bint mask=False):
     '''Iterator over hashed k-mers in a string DNA sequence.
     '''
     cdef u64 n
@@ -55,13 +55,13 @@ def iter_kmers(str seq, int k):
         nt = seq[end]
         if skip > 0:
             skip -= 1
-        if nt == 'A' or nt == 'a':
+        if nt == 'A' or (nt == 'a' and not mask):
             n = 0
-        elif nt == 'C' or nt == 'c':
+        elif nt == 'C' or (nt == 'c' and not mask):
             n = 1
-        elif nt == 'G' or nt == 'g':
+        elif nt == 'G' or (nt == 'g' and not mask):
             n = 2
-        elif nt == 'T' or nt == 't':
+        elif nt == 'T' or (nt == 't' and not mask):
             n = 3
         else:
             skip = k

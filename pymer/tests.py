@@ -1,24 +1,7 @@
-# Copyright 2016 Kevin Murray <spam@kdmurray.id.au>
-#
-# Permission is hereby granted, free of charge, to any person obtaining
-# a copy of this software and associated documentation files (the
-# "Software"), to deal in the Software without restriction, including
-# without limitation the rights to use, copy, modify, merge, publish,
-# distribute, sublicense, and/or sell copies of the Software, and to
-# permit persons to whom the Software is furnished to do so, subject to
-# the following conditions:
-#
-# The above copyright notice and this permission notice shall be
-# included in all copies or substantial portions of the Software.
-#
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
-# EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-# MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
-# NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS
-# BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN
-# ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
-# CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-# SOFTWARE.
+# Copyright 2016 Kevin Murray <kdmfoss@gmail.com>
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 import numpy as np
 from tempdir import run_in_tempdir
@@ -27,7 +10,6 @@ import itertools as itl
 
 from . import (
     ExactKmerCounter,
-    CountMinKmerCounter,
 )
 from ._hash import (
     iter_kmers,
@@ -106,7 +88,7 @@ def test_counter_operations():
         for mer in all_kmers(2):
             assert sub[mer] == 0, (sub[mer], kc)  # caps at zero even after -2
 
-    for kc in [ExactKmerCounter(2), CountMinKmerCounter(2, (4, 100000))]:
+    for kc in [ExactKmerCounter(2), ]:
         do_test(kc)
 
 
@@ -123,23 +105,13 @@ def test_counter_consume():
         for mer in all_kmers(3):
             assert kc[mer] == 0  # back to zero after unconsume
 
-    for kc in [ExactKmerCounter(3), CountMinKmerCounter(3, (4, 100000))]:
+    for kc in [ExactKmerCounter(3), ]:
         do_test(kc)
-
-
-def test_cms_counter_overflow():
-    K = 2
-    kc = CountMinKmerCounter(K, (2, 100))
-
-    for _ in range(2**16):
-        kc.consume('AA')
-
-    assert kc['AA'] == 2**16 - 1, kc['AA']
 
 
 @run_in_tempdir()
 def test_counter_io():
-    for CounterType in ExactKmerCounter, CountMinKmerCounter:
+    for CounterType in [ExactKmerCounter, ]:
         mer = 'AA'
 
         kc = CounterType(len(mer))
@@ -149,5 +121,5 @@ def test_counter_io():
 
         filename = 'counter.bcz'
         kc.write(filename)
-        newkc = CounterType.read(filename)
-        assert kc[mer] == 1
+        newkc = CounterType.read(filename, kc.k)
+        assert newkc[mer] == 1

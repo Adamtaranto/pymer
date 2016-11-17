@@ -1,4 +1,4 @@
-bcolz>=1.0.0
 numpy>=1.10
-cython>=0.23
+cython
 numpydoc
+h5py
