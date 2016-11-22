@@ -5,6 +5,11 @@
 
 from __future__ import print_function, division, absolute_import
 
+import numpy as np
+import scipy as sp
+from scipy import sparse
+from scipy.sparse import linalg
+
 from .base import BaseCounter
 from ._hash import (
     hash_to_kmer,
@@ -24,4 +29,69 @@ class TransitionKmerCounter(BaseCounter):
     addition, the steady-state vector is calculated from the complete transition
     matrix via eigendecomposition.
 
-    pass
+    Parameters
+    ----------
+    k : int
+        K-mer length
+    alphabet : list-like (str, bytes, list, set, tuple) of letters
+        Alphabet over which values are defined, defaults to "ACGT"
+    '''
+
+    def __init__(self, k, alphabet="ACGT", array=None):
+        BaseCounter.__init__(self, k, alphabet)
+        if array is not None:
+            self.array = array
+        else:
+            self.array = np.zeros((len(alphabet) ** (k-1), len(alphabet)),
+                                  dtype=int)
+        self.n = 4**(k-1)
+        self._transitions = None
+        self._P = None
+
+    def _clear(self):
+        self._transitions = None
+        self._P = None
+
+    @classmethod
+    def _kmer2trans(cls, kmer):
+        return kmer >> 2, kmer & 0x3
+
+    def _incr(self, kmer, by=1):
+        self._clear()
+        stem, to = self._kmer2trans(kmer)
+        self.array[stem, to] += by
+
+    def _decr(self, kmer, by=1):
+        self._clear()
+        stem, to = self._kmer2trans(kmer)
+        self.array[stem, to] -= by
+
+    @property
+    def transitions(self):
+        if self._transitions is not None:
+            return self._transitions
+        transitions = self.array.astype(np.float)
+        transitions /= transitions.sum(1)[:, np.newaxis]
+        self._transitions = transitions
+        return transitions
+
+    @property
+    def P(self):
+        if self._P is not None:
+            return self._P
+        sparse_P = sparse.lil_matrix((self.n, self.n))
+        alpha_size = len(self.alphabet)
+        bitmask = (self.n-1)  # Mask w/ all bits set hi within (k-1)mer range.
+        for fr in range(self.n):
+            for a in range(alpha_size):
+                to = (fr << 2 | a) & bitmask
+                sparse_P[fr, to] = self.transitions[fr, a]
+        self._P = sparse_P
+        return sparse_P
+
+    @property
+    def steady_state(self):
+        v, w = linalg.eigs(self.P.transpose(), which='LR')
+        ssf = np.real(w[:, v.argmax()])
+        ssf /= ssf.sum()
+        return ssf

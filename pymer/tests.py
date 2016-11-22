@@ -109,7 +109,6 @@ def test_counter_consume():
     for kc in [ExactKmerCounter(3), ]:
         do_test(kc)
 
-
 @run_in_tempdir()
 def test_counter_io():
     for CounterType in [ExactKmerCounter, ]:
@@ -120,7 +119,21 @@ def test_counter_io():
         kc.consume(mer)
         assert kc[mer] == 1
 
-        filename = 'counter.bcz'
+        filename = 'counter.h5'
         kc.write(filename)
         newkc = CounterType.read(filename, kc.k)
         assert newkc[mer] == 1
+
+
+def test_transition_counter_consume():
+    t = TransitionKmerCounter(3)
+    t.consume(K3_DBS)
+    counts = t.array
+    assert (counts == 1).all(), counts
+    P = t.transitions
+    expect_P = np.zeros_like(P) + 0.25  # should all be eq. emission prob
+    assert np.allclose(P, expect_P)
+    assert (P.sum(1) == 1).all(), P.sum(1)
+    pi = t.steady_state
+    assert pi.sum() == 1, pi.sum()
+    assert np.allclose(pi.dot(t.P.toarray()),  pi), pi
