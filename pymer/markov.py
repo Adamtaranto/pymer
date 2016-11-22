@@ -7,10 +7,9 @@ from __future__ import print_function, division, absolute_import
 
 from .base import BaseCounter
 from ._hash import (
-    iter_kmers,
     hash_to_kmer,
 )
 
 
-class KmerTransitionCounter(BaseCounter):
+class TransitionKmerCounter(BaseCounter):
     pass

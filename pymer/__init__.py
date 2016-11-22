@@ -88,7 +88,7 @@ from .count import (
 )
 
 from .markov import (
-    KmerTransitionCounter,
+    TransitionKmerCounter,
 )
 
 from ._version import get_versions

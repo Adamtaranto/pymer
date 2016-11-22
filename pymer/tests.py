@@ -10,6 +10,7 @@ import itertools as itl
 
 from . import (
     ExactKmerCounter,
+    TransitionKmerCounter
 )
 from ._hash import (
     iter_kmers,
