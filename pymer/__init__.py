@@ -74,6 +74,11 @@ Exact K-mer Counting
 
 .. autoclass:: ExactKmerCounter
 
+Markovian K-mer Counting
+^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. autoclass:: TransitionKmerCounter
+
 '''
 
 from __future__ import absolute_import, division, print_function

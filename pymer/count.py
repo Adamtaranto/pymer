@@ -18,14 +18,12 @@ class ExactKmerCounter(BaseCounter):
 
     '''Count k-mers in DNA sequences exactly using an array.
 
-    .. note:: This class is not suitable for k-mers of more than 12 bases.
-
     Parameters
     ----------
     k : int
         K-mer length
     alphabet : list-like (str, bytes, list, set, tuple) of letters
-        Alphabet over which values are defined
+        Alphabet over which values are defined, defaults to "ACGT"
     '''
 
     def __init__(self, k, alphabet='ACGT', array=None):
