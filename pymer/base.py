@@ -5,6 +5,7 @@
 
 import numpy as np
 import h5py
+import screed
 
 from ._hash import (
     iter_kmers,
@@ -22,16 +23,15 @@ class BaseCounter(object):
         self.alphabet = alphabet
         self.num_kmers = len(alphabet) ** k
 
-    def _incr(self, kmer, by=1):
-        self[kmer] = min(self.typemax, self[kmer] + by)
-
-    def _decr(self, kmer, by=1):
-        self[kmer] = max(self.typemin, self[kmer] - by)
-
     def consume(self, seq):
         '''Counts all k-mers in sequence.'''
         for kmer in iter_kmers(seq, self.k):
             self._incr(kmer)
+
+    def consume_file(self, filename):
+        with screed.open(filename) as sequences:
+            for seq in sequences:
+                self.consume(seq['sequence'])
 
     def unconsume(self, seq):
         '''Subtracts all k-mers in sequence.'''

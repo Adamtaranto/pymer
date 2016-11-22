@@ -2,6 +2,9 @@ numpy>=1.10
 cython
 numpydoc
 h5py
+screed
+scipy
+
 nose
 nose-cov
 blessings

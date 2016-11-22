@@ -4,6 +4,7 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 from __future__ import print_function, division, absolute_import
+
 import numpy as np
 
 from .base import BaseCounter
@@ -73,6 +74,12 @@ class ExactKmerCounter(BaseCounter):
                 return ValueError(msg)
             item = next(iter_kmers(item, self.k))
         self.array[item, 0] = val
+
+    def _incr(self, kmer, by=1):
+        self[kmer] = min(self.typemax, self[kmer] + by)
+
+    def _decr(self, kmer, by=1):
+        self[kmer] = max(self.typemin, self[kmer] - by)
 
     def to_dict(self, sparse=True):
         d = {}
