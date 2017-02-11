@@ -14,9 +14,8 @@ from ._hash import (
 
 from ._version import get_versions
 
-
 class BaseCounter(object):
-    file_version = 1
+    file_version = 2
 
     def __init__(self, k, alphabet='ACGT'):
         self.k = k
@@ -29,6 +28,7 @@ class BaseCounter(object):
             self._incr(kmer)
 
     def consume_file(self, filename):
+        """Counts all kmers in all sequences in a FASTA/FASTQ file."""
         with screed.open(filename) as sequences:
             for seq in sequences:
                 self.consume(seq['sequence'])
@@ -45,7 +45,11 @@ class BaseCounter(object):
     @classmethod
     def read(cls, filename, kmersize):
         h5f = h5py.File(filename, 'r')
-        attrs = h5f.attrs
+        if kmersize not in h5f.attrs['klengths']:
+            raise ValueError("Kmer length not in file: {}".format(kmersize))
+        arraypath = cls._arraypath(kmersize)
+        dset = h5f[arraypath]
+        attrs = dset.attrs
         if attrs['class'].decode('utf8') != cls.__name__:
             msg = 'Class mismatch: use {}.read() instead'.format(attrs['class'])
             raise ValueError(msg)
@@ -53,23 +57,25 @@ class BaseCounter(object):
             msg = 'File format version mismatch'
             raise ValueError(msg)
         alphabet = attrs['alphabet'].decode('utf8')
-        arraypath = cls._arraypath(kmersize)
-        array = h5f[arraypath][...]
+        array = dset[...]
         return cls(kmersize, alphabet=alphabet, array=array)
 
     def write(self, filename):
-        h5f = h5py.File(filename, 'w')
+        h5f = h5py.File(filename, 'a')
         attrs = {
             'alphabet': self.alphabet,
             'class': self.__class__.__name__,
             'fileversion': self.file_version,
             'pymerversion': get_versions()['version'],
         }
+        arraypath = self._arraypath(self.k)
+        ds = h5f.create_dataset(arraypath, data=self.array, chunks=True,
+                                compression='gzip', compression_opts=9)
         for attr, val in attrs.items():
             if isinstance(val, str):
                 val = val.encode('utf-8')
-            h5f.attrs[attr] = val
-        arraypath = self._arraypath(self.k)
-        h5f.create_dataset(arraypath, data=self.array, chunks=True,
-                           compression='gzip', compression_opts=9)
+            ds.attrs[attr] = val
+        klengths = h5f.attrs.get("klengths", []) + [self.k]
+        h5f.attrs['klengths'] = klengths
         h5f.close()
+
