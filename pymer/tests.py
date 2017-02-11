@@ -109,20 +109,39 @@ def test_counter_consume():
     for kc in [ExactKmerCounter(3), ]:
         do_test(kc)
 
+
+@run_in_tempdir()
+def test_counter_readall():
+    filename = "counter.h5"
+    for CounterType in [ExactKmerCounter, TransitionKmerCounter]:
+        for ksize in range(1, 4):
+            kc = CounterType(ksize)
+
+            kc.consume(K3_DBS)
+            assert kc.array.sum() == len(K3_DBS) - ksize + 1
+
+            kc.write(filename)
+
+        allctrs = CounterType.readall(filename)
+        for ksize in range(1, 4):
+            assert ksize in allctrs
+            assert allctrs[ksize].array.sum() == len(K3_DBS) - ksize + 1
+
+
 @run_in_tempdir()
 def test_counter_io():
-    for CounterType in [ExactKmerCounter, ]:
+    for CounterType in [ExactKmerCounter, TransitionKmerCounter]:
         mer = 'AA'
 
         kc = CounterType(len(mer))
 
         kc.consume(mer)
-        assert kc[mer] == 1
+        assert kc.array.sum() == 1
 
         filename = 'counter.h5'
         kc.write(filename)
         newkc = CounterType.read(filename, kc.k)
-        assert newkc[mer] == 1
+        assert newkc.array.sum() == 1
 
 
 def test_transition_counter_consume():

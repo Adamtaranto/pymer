@@ -14,8 +14,9 @@ from ._hash import (
 
 from ._version import get_versions
 
+
 class BaseCounter(object):
-    file_version = 2
+    file_version = 3
 
     def __init__(self, k, alphabet='ACGT'):
         self.k = k
@@ -40,42 +41,46 @@ class BaseCounter(object):
 
     @classmethod
     def _arraypath(cls, kmersize):
-        return "counts_{}-mer".format(kmersize)
+        return "{}_{}".format(cls.__name__, kmersize)
 
     @classmethod
     def read(cls, filename, kmersize):
         h5f = h5py.File(filename, 'r')
-        if kmersize not in h5f.attrs['klengths']:
-            raise ValueError("Kmer length not in file: {}".format(kmersize))
-        arraypath = cls._arraypath(kmersize)
-        dset = h5f[arraypath]
-        attrs = dset.attrs
-        if attrs['class'].decode('utf8') != cls.__name__:
-            msg = 'Class mismatch: use {}.read() instead'.format(attrs['class'])
-            raise ValueError(msg)
-        if attrs['fileversion'] != cls.file_version:
+        if h5f.attrs['fileversion'] != cls.file_version:
             msg = 'File format version mismatch'
             raise ValueError(msg)
-        alphabet = attrs['alphabet'].decode('utf8')
+        arraypath = cls._arraypath(kmersize)
+        if arraypath not in h5f:
+            raise KeyError("k-mer size and counter type not in file")
+        dset = h5f[arraypath]
+        alphabet = dset.attrs['alphabet'].decode('utf8')
         array = dset[...]
         return cls(kmersize, alphabet=alphabet, array=array)
 
+    @classmethod
+    def readall(cls, filename):
+        h5f = h5py.File(filename, 'r')
+        instances = {}
+        for arraypath in h5f.keys():
+            clsname, _, k = arraypath.partition('_')
+            kmersize = int(k)
+            if clsname == cls.__name__:
+                instances[kmersize] = cls.read(filename, kmersize)
+        return instances
+
     def write(self, filename):
         h5f = h5py.File(filename, 'a')
-        attrs = {
-            'alphabet': self.alphabet,
-            'class': self.__class__.__name__,
-            'fileversion': self.file_version,
-            'pymerversion': get_versions()['version'],
-        }
-        arraypath = self._arraypath(self.k)
-        ds = h5f.create_dataset(arraypath, data=self.array, chunks=True,
-                                compression='gzip', compression_opts=9)
-        for attr, val in attrs.items():
-            if isinstance(val, str):
-                val = val.encode('utf-8')
-            ds.attrs[attr] = val
-        klengths = h5f.attrs.get("klengths", []) + [self.k]
-        h5f.attrs['klengths'] = klengths
-        h5f.close()
+        if 'fileversion' in h5f.attrs and \
+                h5f.attrs['fileversion'] != self.file_version:
+            msg = 'File format version mismatch'
+            raise ValueError(msg)
 
+        h5f.attrs['fileversion'] = self.file_version
+        h5f.attrs['pymerversion'] = get_versions()['version'].encode('utf8')
+
+        ds = h5f.create_dataset(self._arraypath(self.k), data=self.array,
+                                chunks=True, compression='gzip',
+                                compression_opts=9)
+
+        ds.attrs['alphabet'] = self.alphabet.encode('utf8')
+        h5f.close()

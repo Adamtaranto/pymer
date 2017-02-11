@@ -33,7 +33,7 @@ class TransitionKmerCounter(BaseCounter):
     ----------
     k : int
         K-mer length
-    alphabet : list-like (str, bytes, list, set, tuple) of letters
+    alphabet : str
         Alphabet over which values are defined, defaults to "ACGT"
     '''
 

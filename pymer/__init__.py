@@ -107,14 +107,3 @@ __all__ = [
     'iter_kmers',
     'hash_to_kmer',
 ]
-
-def readall(filename):
-    h5f = h5py.File(filename, 'r')
-    kmersizes = h5f.attrs['klengths']
-    instances = {}
-    for kmersize in kmersizes:
-        attrs = h5f[BaseCounter._arraypath(kmersize)].attrs
-        clsname = attrs['class'].decode('utf8')
-        cls = globals()[clsname]
-        instances[kmersize] = cls.read(filename, kmersize)
-    return instances
