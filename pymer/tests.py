@@ -147,12 +147,23 @@ def test_counter_io():
 def test_transition_counter_consume():
     t = TransitionKmerCounter(3)
     t.consume(K3_DBS)
+
+    # Raw counts
     counts = t.array
     assert (counts == 1).all(), counts
+
+    # P, i.e. (k-1, k-1)-sized array of probabilies, the formal transition
+    # matrix
     P = t.transitions
     expect_P = np.zeros_like(P) + 0.25  # should all be eq. emission prob
     assert np.allclose(P, expect_P)
     assert (P.sum(1) == 1).all(), P.sum(1)
+
+    # Steady-state frequency vector, π
     pi = t.steady_state
     assert pi.sum() == 1, pi.sum()
     assert np.allclose(pi.dot(t.P.toarray()),  pi), pi
+
+    # Stem frequencies
+    sf = t.stem_frequencies
+    assert np.allclose(sf, np.ones_like(sf) / len(sf))

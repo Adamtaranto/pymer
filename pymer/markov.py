@@ -95,3 +95,10 @@ class TransitionKmerCounter(BaseCounter):
         ssf = np.real(w[:, v.argmax()])
         ssf /= ssf.sum()
         return ssf
+
+    @property
+    def stem_frequencies(self):
+        '''Compute the frequencies of each stem, i.e. (k-1)-mer'''
+        stemfreq = self.array.sum(axis=1).astype(np.float)
+        stemfreq /= stemfreq.sum()
+        return stemfreq
