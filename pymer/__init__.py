@@ -68,6 +68,8 @@ Summary
 .. autosummary::
 
     ExactKmerCounter
+    TransitionKmerCounter
+
 
 Exact K-mer Counting
 ^^^^^^^^^^^^^^^^^^^^
