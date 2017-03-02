@@ -68,6 +68,7 @@ class TransitionKmerCounter(BaseCounter):
 
     @property
     def transitions(self):
+        """Dense [k-1]x4 transition frequency matrix"""
         if self._transitions is not None:
             return self._transitions
         transitions = self.array.astype(np.float)
@@ -77,6 +78,7 @@ class TransitionKmerCounter(BaseCounter):
 
     @property
     def P(self):
+        """Sparse [k-1]x[k-1] transition frequency matrix"""
         if self._P is not None:
             return self._P
         sparse_P = sparse.lil_matrix((self.n, self.n))
@@ -91,6 +93,7 @@ class TransitionKmerCounter(BaseCounter):
 
     @property
     def steady_state(self):
+        """Steady-state frequencies of each [k-1]-mer"""
         v, w = linalg.eigs(self.P.transpose(), which='LR')
         ssf = np.real(w[:, v.argmax()])
         ssf /= ssf.sum()
@@ -98,7 +101,7 @@ class TransitionKmerCounter(BaseCounter):
 
     @property
     def stem_frequencies(self):
-        '''Compute the frequencies of each stem, i.e. (k-1)-mer'''
+        """Frequencies of each stem ([k-1]-mer)"""
         stemfreq = self.array.sum(axis=1).astype(np.float)
         stemfreq /= stemfreq.sum()
         return stemfreq

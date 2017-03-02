@@ -43,12 +43,12 @@ Counters can be added and subtracted:
 >>> kc['GTAC']
 0
 
-Counters may be read and written to a file, using ``bcolz``.
+Counters may be read and written to a file, using ``HDF5``.
 
 >>> from tempfile import mkdtemp
 >>> from shutil import rmtree
 >>> tmpdir = mkdtemp()
->>> filename = tmpdir + '/kc.bcz'
+>>> filename = tmpdir + '/kc.h5'
 
 (Above we simply create a temporary directory to hold the saved counts.)
 
