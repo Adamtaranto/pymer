@@ -18,14 +18,15 @@ from ._version import get_versions
 class BaseCounter(object):
     file_version = 3
 
-    def __init__(self, k, alphabet='ACGT'):
+    def __init__(self, k, alphabet='ACGT', canonical=False):
         self.k = k
         self.alphabet = alphabet
         self.num_kmers = len(alphabet) ** k
+        self.canonical = canonical
 
     def consume(self, seq):
         '''Counts all k-mers in sequence.'''
-        for kmer in iter_kmers(seq, self.k):
+        for kmer in iter_kmers(seq, self.k, canonical=self.canonical):
             self._incr(kmer)
 
     def consume_file(self, filename):
@@ -36,7 +37,7 @@ class BaseCounter(object):
 
     def unconsume(self, seq):
         '''Subtracts all k-mers in sequence.'''
-        for kmer in iter_kmers(seq, self.k):
+        for kmer in iter_kmers(seq, self.k, canonical=self.canonical):
             self._decr(kmer)
 
     @classmethod

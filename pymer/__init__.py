@@ -59,6 +59,25 @@ True
 >>> rmtree(tmpdir)
 
 
+Kmers whose strand is unknown (e.g. those from NGS reads) can be "canonicalised"
+to the lexographically smaller of the kmer and its reverse complement by
+supplying the `canonical=True` argument to `Counter` constructors, or
+`iter_kmers`.
+
+>>> canon = ExactKmerCounter(2, canonical=True)
+>>> canon.consume('AAAA')
+>>> canon['AA']
+3
+>>> canon['TT']
+3
+>>> noncanon = ExactKmerCounter(2, canonical=False)
+>>> noncanon.consume('AAAA')
+>>> noncanon['AA']
+3
+>>> noncanon['TT']
+0
+
+
 Data Structures
 ---------------
 

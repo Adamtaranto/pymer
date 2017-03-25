@@ -27,7 +27,20 @@ def hash_to_kmer(int h, int k):
     return ''.join(reversed(kmer))
 
 
-def iter_kmers(str seq, int k, bint canonical=True, bint mask=False):
+cdef rc_kmer(u64 x, int k):
+    # Reverse
+    x = (x & 0x3333333333333333) <<  2 | (x & 0xCCCCCCCCCCCCCCCC) >>  2
+    x = (x & 0x0F0F0F0F0F0F0F0F) <<  4 | (x & 0xF0F0F0F0F0F0F0F0) >>  4
+    x = (x & 0x00FF00FF00FF00FF) <<  8 | (x & 0xFF00FF00FF00FF00) >>  8
+    x = (x & 0x0000FFFF0000FFFF) << 16 | (x & 0xFFFF0000FFFF0000) >> 16
+    x = (x & 0x00000000FFFFFFFF) << 32 | (x & 0xFFFFFFFF00000000) >> 32
+    # Complement
+    x = ~x
+    # Shift back within bitmask
+    x >>= 64 - 2 * k
+    return x
+
+def iter_kmers(str seq, int k, bint canonical=False, bint mask=False):
     '''Iterator over hashed k-mers in a string DNA sequence.
     '''
     cdef u64 n
@@ -54,4 +67,7 @@ def iter_kmers(str seq, int k, bint canonical=True, bint mask=False):
         h = ((h << 2) | n) & bitmask
         if end >= k - 1 and skip == 0:
             # Only yield once an entire kmer has been loaded into h
-            yield h
+            if canonical:
+                yield min(h, rc_kmer(h, k))
+            else:
+                yield h

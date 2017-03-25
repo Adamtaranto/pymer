@@ -37,8 +37,8 @@ class TransitionKmerCounter(BaseCounter):
         Alphabet over which values are defined, defaults to "ACGT"
     '''
 
-    def __init__(self, k, alphabet="ACGT", array=None):
-        BaseCounter.__init__(self, k, alphabet)
+    def __init__(self, k, alphabet="ACGT", array=None, canonical=False):
+        BaseCounter.__init__(self, k, alphabet, canonical)
         if array is not None:
             self.array = array
         else:

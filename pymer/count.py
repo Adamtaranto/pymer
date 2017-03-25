@@ -26,8 +26,8 @@ class ExactKmerCounter(BaseCounter):
         Alphabet over which values are defined, defaults to "ACGT"
     '''
 
-    def __init__(self, k, alphabet='ACGT', array=None):
-        BaseCounter.__init__(self, k, alphabet)
+    def __init__(self, k, alphabet='ACGT', array=None, canonical=False):
+        BaseCounter.__init__(self, k, alphabet, canonical)
         if array is not None:
             self.array = array
         else:
@@ -62,7 +62,7 @@ class ExactKmerCounter(BaseCounter):
             if len(item) != self.k:
                 msg = "KmerCounter must be queried with k-length kmers"
                 return ValueError(msg)
-            item = next(iter_kmers(item, self.k))
+            item = next(iter_kmers(item, self.k, self.canonical))
         return self.array[item, 0]
 
     def __setitem__(self, item, val):

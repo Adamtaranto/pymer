@@ -54,6 +54,21 @@ def test_iter_kmers():
     assert (counts == 1).all(), counts
 
 
+def test_iter_kmers_canonical():
+    seq =   "AAAAAAA"
+    rcseq = "TTTTTTT"
+    k = 2
+
+    canon_seq = set(iter_kmers(seq, k, canonical=True))
+    canon_rcseq = set(iter_kmers(rcseq, k, canonical=True))
+    print(canon_seq, canon_rcseq)
+    assert canon_seq == canon_rcseq
+
+    non_canon_seq = set(iter_kmers(seq, k, canonical=False))
+    non_canon_rcseq = set(iter_kmers(rcseq, k, canonical=False))
+    assert non_canon_seq != non_canon_rcseq
+
+
 def test_iter_kmers_ns():
     k = 3
     seq = "ACGTNACGTNCG"
@@ -91,7 +106,7 @@ def test_counter_operations():
         for mer in all_kmers(2):
             assert sub[mer] == 0, (sub[mer], kc)  # caps at zero even after -2
 
-    for kc in [ExactKmerCounter(2), ]:
+    for kc in [ExactKmerCounter(2, canonical=False), ]:
         do_test(kc)
 
 
@@ -108,7 +123,7 @@ def test_counter_consume():
         for mer in all_kmers(3):
             assert kc[mer] == 0  # back to zero after unconsume
 
-    for kc in [ExactKmerCounter(3), ]:
+    for kc in [ExactKmerCounter(3, canonical=False), ]:
         do_test(kc)
 
 
@@ -147,7 +162,7 @@ def test_counter_io():
 
 
 def test_transition_counter_consume():
-    t = TransitionKmerCounter(3)
+    t = TransitionKmerCounter(3, canonical=False)
     t.consume(K3_DBS)
 
     # Raw counts
