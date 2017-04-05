@@ -16,7 +16,7 @@ from ._version import get_versions
 
 
 class BaseCounter(object):
-    file_version = 3
+    file_version = 4
 
     def __init__(self, k, alphabet='ACGT', canonical=False):
         self.k = k

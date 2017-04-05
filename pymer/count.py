@@ -31,7 +31,7 @@ class ExactKmerCounter(BaseCounter):
         if array is not None:
             self.array = array
         else:
-            self.array = np.zeros((len(alphabet) ** k, 1), dtype=int)
+            self.array = np.zeros(len(alphabet) ** k, dtype=int)
         self.typemax = np.iinfo(self.array.dtype).max
         self.typemin = np.iinfo(self.array.dtype).min
 
@@ -63,7 +63,7 @@ class ExactKmerCounter(BaseCounter):
                 msg = "KmerCounter must be queried with k-length kmers"
                 return ValueError(msg)
             item = next(iter_kmers(item, self.k, self.canonical))
-        return self.array[item, 0]
+        return self.array[item]
 
     def __setitem__(self, item, val):
         if isinstance(item, (str, bytes)):
@@ -71,7 +71,7 @@ class ExactKmerCounter(BaseCounter):
                 msg = "KmerCounter must be queried with k-length kmers"
                 return ValueError(msg)
             item = next(iter_kmers(item, self.k))
-        self.array[item, 0] = val
+        self.array[item] = val
 
     def _incr(self, kmer, by=1):
         self[kmer] = min(self.typemax, self[kmer] + by)
@@ -82,7 +82,7 @@ class ExactKmerCounter(BaseCounter):
     def to_dict(self, sparse=True):
         d = {}
         for kmer in range(self.num_kmers):
-            count = self.array[kmer]
+            count = self[kmer]
             if sparse and count == 0:
                 continue
             kmer = hash_to_kmer(kmer, self.k)
@@ -90,5 +90,28 @@ class ExactKmerCounter(BaseCounter):
         return d
 
     def print_table(self, sparse=False, file=None, sep='\t'):
+        '''
+        Prints a table of k-mer counts
+
+        Parameters
+        ----------
+        sparse: bool
+            Print only observed kmers
+        file: IO object
+            Print to `file`
+        sep: str
+            Separate k-mers and their counts with `sep`
+        '''
+
         for kmer, count in sorted(self.to_dict(sparse=sparse).items()):
             print(kmer, count, sep=sep, file=file)
+
+    @property
+    def counts(self):
+        '''k-mer Counts'''
+        return self.array
+
+    @property
+    def frequencies(self):
+        '''k-mer Frequencies'''
+        return self.array / self.array.sum()

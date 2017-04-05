@@ -55,7 +55,7 @@ def test_iter_kmers():
 
 
 def test_iter_kmers_canonical():
-    seq =   "AAAAAAA"
+    seq = "AAAAAAA"
     rcseq = "TTTTTTT"
     k = 2
 
@@ -161,7 +161,8 @@ def test_counter_io():
         assert newkc.array.sum() == 1
 
 
-def test_transition_counter_consume():
+def test_transition_counter():
+    '''TransitionKmerCounter behaves correctly'''
     t = TransitionKmerCounter(3, canonical=False)
     t.consume(K3_DBS)
 
@@ -184,3 +185,18 @@ def test_transition_counter_consume():
     # Stem frequencies
     sf = t.stem_frequencies
     assert np.allclose(sf, np.ones_like(sf) / len(sf))
+
+
+def test_exact_counter():
+    '''ExactKmerCounter() behaves correctly'''
+    k = 3
+    c = ExactKmerCounter(k, canonical=False)
+    c.consume(K3_DBS)
+
+    assert c.array.shape == (4**k,)
+
+    assert c.array.sum() == len(K3_DBS) - k + 1
+    assert len(c) == len(K3_DBS) - k + 1
+
+    assert all(c.counts == 1)
+    assert all(c.frequencies == 1/(4**k))
