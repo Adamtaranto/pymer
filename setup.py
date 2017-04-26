@@ -35,10 +35,7 @@ try:
 except ImportError:
     def cythonize(x): return x
 
-description = """
-pymer: Pythonic fast k-mer counting routines
-"""
-
+description = "pymer: Pythonic fast k-mer counting routines"
 
 class NoseCommand(TestCommand):
     def finalize_options(self):
@@ -92,7 +89,7 @@ setup(
     ]),
     description=description,
     author="Kevin Murray",
-    author_email="spam@kdmurray.id.au",
+    author_email="kdmfoss@gmail.com",
     url="https://github.com/kdmurray91/pymer",
     keywords=["kmer"],
     classifiers=[
