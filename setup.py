@@ -37,6 +37,7 @@ except ImportError:
 
 description = "pymer: Pythonic fast k-mer counting routines"
 
+
 class NoseCommand(TestCommand):
     def finalize_options(self):
         TestCommand.finalize_options(self)
@@ -69,9 +70,11 @@ setup(
     cmdclass=cmdclasses,
     install_requires=[
         'h5py',
+        'scipy',
+        'screed>=1.0',
     ],
     setup_requires=[
-        'numpy>=1.8',
+        'numpy>=1.10',
         'nose',
     ],
     tests_require=[

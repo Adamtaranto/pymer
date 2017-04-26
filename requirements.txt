@@ -2,7 +2,7 @@ numpy>=1.10
 cython
 numpydoc
 h5py
-screed
+screed>=1.0
 scipy
 
 nose
