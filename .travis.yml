@@ -4,7 +4,7 @@ sudo: required
 dist: trusty
 
 python:
-  - 3.5
+  - 3.8
 
 before_install:
   - sudo apt-get update
@@ -18,11 +18,10 @@ before_install:
 
 install:
   - pip install -U coveralls pip
-  - pip install -r requirements.txt
-  - python setup.py install
+  - pip install '.[tests]'
 
 script:
-  - python setup.py test
+  - pytest tests -v
 
 after_success:
   - coveralls

@@ -1,7 +1,0 @@
-machine:
-  python:
-    version: 2.7.10
-
-dependencies:
-  post:
-    - pyenv local 2.7.10 3.5.1
