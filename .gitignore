@@ -5,6 +5,12 @@
 !circle.yml
 *.swp
 
+# version
+src/pymer/_version.py
+
+# Mac stuff
+.DS_Store
+
 # Python junk
 *.pyc
 .ipynb_checkpoints
@@ -18,8 +24,8 @@ dist
 htmlcov
 
 # Cython compiled files
-pymer/_cms.c
-pymer/_hash.c
+src/pymer/_cms.c
+src/pymer/_hash.c
 
 #doc temps
 doc/_build
