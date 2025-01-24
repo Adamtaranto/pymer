@@ -71,7 +71,7 @@ class TransitionKmerCounter(BaseCounter):
         """Dense [k-1]x4 transition frequency matrix"""
         if self._transitions is not None:
             return self._transitions
-        transitions = self.array.astype(np.float)
+        transitions = self.array.astype(float)
         transitions /= transitions.sum(1)[:, np.newaxis]
         self._transitions = transitions
         return transitions
@@ -102,6 +102,6 @@ class TransitionKmerCounter(BaseCounter):
     @property
     def stem_frequencies(self):
         """Frequencies of each stem ([k-1]-mer)"""
-        stemfreq = self.array.sum(axis=1).astype(np.float)
+        stemfreq = self.array.sum(axis=1).astype(float)
         stemfreq /= stemfreq.sum()
         return stemfreq

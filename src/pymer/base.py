@@ -12,8 +12,7 @@ from ._hash import (
     hash_to_kmer,
 )
 
-from ._version import get_versions
-
+from ._version import __version__
 
 class BaseCounter(object):
     file_version = 4
@@ -54,7 +53,7 @@ class BaseCounter(object):
         if arraypath not in h5f:
             raise KeyError("k-mer size and counter type not in file")
         dset = h5f[arraypath]
-        alphabet = dset.attrs['alphabet'].decode('utf8')
+        alphabet = dset.attrs['alphabet']
         array = dset[...]
         return cls(kmersize, alphabet=alphabet, array=array)
 
@@ -77,7 +76,7 @@ class BaseCounter(object):
             raise ValueError(msg)
 
         h5f.attrs['fileversion'] = self.file_version
-        h5f.attrs['pymerversion'] = get_versions()['version'].encode('utf8')
+        h5f.attrs['pymerversion'] = __version__
 
         ds = h5f.create_dataset(self._arraypath(self.k), data=self.array,
                                 chunks=True, compression='gzip',
