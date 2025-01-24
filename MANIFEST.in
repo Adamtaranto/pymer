@@ -1,6 +1,0 @@
-include versioneer.py
-include pymer/_cms.pyx
-include pymer/_hash.pyx
-include pymer/xxhash.c
-include pymer/xxhash.h
-include pymer/_version.py

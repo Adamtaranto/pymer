@@ -1,0 +1,83 @@
+# Specifies the build system requirements and backend
+[build-system]
+requires = [
+    "hatchling",  # Build backend
+    "hatch-vcs",  # Version control system plugin for dynamic versioning
+    "setuptools", # Setuptools for compiling C extensions
+    "wheel",      # Wheel for packaging
+    "cython",     # Cython for compiling C extensions
+    "numpy",      # NumPy for numerical operations and C extension includes
+]
+build-backend = "hatchling.build"
+
+[project]
+name = "pymer"
+description = "pymer: Pythonic fast k-mer counting routines"
+authors = [
+    { name = "Kevin Murray", email = "kdmfoss@gmail.com" }
+]
+readme = "README.rst"
+license = { file = "LICENSE" }
+requires-python = ">=3.8"
+
+classifiers = [
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3",
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "Operating System :: OS Independent",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Topic :: Scientific/Engineering :: Bio-Informatics",
+    ]
+
+dynamic = ["version"]
+
+dependencies = [
+    "h5py",
+    "scipy",
+    "screed>=1.0",
+    "numpy>=1.10",
+]
+
+[project.optional-dependencies]
+tests = [
+    "pytest",
+    "blessings",
+    "docopt",
+]
+
+[project.urls]
+Homepage = "https://github.com/kdmurray91/pymer"
+
+[tool.hatch.metadata]
+allow-direct-references = true
+
+[tool.hatch.build]
+packages = ["src"]
+
+[tool.hatch.build.hooks.custom]
+path = "build.py"
+
+[tool.hatch.build.hooks.vcs]
+version-file = "src/pymer/_version.py"
+
+[tool.hatch.version]
+source = "vcs"
+
+[tool.hatch.version.vcs]
+tag-pattern = "v*"
+fallback-version = "0.0.0"
+
+[tool.hatch.build.targets.sdist]
+include = ["src/**/*.py", "src/**/*.pyx", "src/**/*.c", "src/**/*.h", "README.rst"]
+force-include = { "build.py" = "build.py", "setup.py" = "setup.py" }
+exclude = ["src/pymer/**/*.so", "src/pymer/**/*.pyd", "src/pymer/_cms.c", "src/pymer/_hash.c"]
+
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/pymer"]
+artifacts = [
+    "src/pymer/**/*.so",  # Linux/Mac shared objects
+    "src/pymer/**/*.pyd", # Windows shared objects
+    "src/pymer/**/*.c",   # Generated C files
+]
